@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Heart, Zap, Gauge, Flame, Trophy, BarChart3, Home as HomeIcon } from "lucide-react";
-import { base44 } from "@/api/base44Client";
 import MazeCanvas from "@/components/maze/MazeCanvas";
 import AdOverlay from "@/components/maze/AdOverlay";
 import GameOverModal from "@/components/maze/GameOverModal";
@@ -12,7 +11,8 @@ import ControlPad from "@/components/maze/ControlPad";
 import MainMenu from "@/components/maze/MainMenu";
 import CosmeticsScreen from "@/components/maze/CosmeticsScreen";
 import ObstacleIntroModal from "@/components/maze/ObstacleIntroModal";
-import { loadState, saveState } from "@/lib/gameStorage";
+import { loadState, saveState, loadHighScores, addHighScore } from "@/lib/gameStorage";
+import { purchaseProduct } from "@/lib/nativePurchase";
 import { getLevelConfig, INTRO_LEVELS } from "@/lib/mazeGenerator";
 import { generateGoofyName } from "@/lib/nameUtils";
 import { getSkin } from "@/lib/skins";
@@ -40,10 +40,9 @@ export default function Home() {
   const [modal, setModal] = useState(null);
   const [ad, setAd] = useState(null);
   const [showBoard, setShowBoard] = useState(false);
-  const [myId, setMyId] = useState(null);
-  const [myName, setMyName] = useState("");
   const [displayName, setDisplayName] = useState(initial.displayName || null);
   const [pendingScore, setPendingScore] = useState(null);
+  const [buying, setBuying] = useState(false);
 
   const livesRef = useRef(lives);
   livesRef.current = lives;
@@ -52,26 +51,8 @@ export default function Home() {
   const pointer = useRef({ active: false, ax: 0, ay: 0, x: 0, y: 0, maxR: 70 });
 
   useEffect(() => {
-    base44.auth.me().then(async (me) => {
-      setMyId(me.id);
-      const name = me.full_name || (me.email || "").split("@")[0] || "";
-      setMyName(name);
-      // Verify ownership from paid purchase records (server-authoritative).
-      try {
-        const paid = await base44.entities.Base44Purchase.filter({
-          appUserId: me.id, status: "paid",
-        });
-        if (paid && paid.length) {
-          if (paid.some((p) => p.productId === "star")) setStarOwned(true);
-          if (paid.some((p) => p.productId === "adfree")) { setAdFree(true); setLives(6); }
-        }
-      } catch (e) { /* ignore */ }
-    }).catch(() => {});
-  }, []);
-
-  useEffect(() => {
     saveState({ level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, hazardColor, laserColor, hunterColor, starOwned, seenIntros, displayName, adFree });
-  }, [level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned, seenIntros]);
+  }, [level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned, seenIntros, adFree]);
 
   useEffect(() => {
     if (level > bestLevel) setBestLevel(level);
@@ -87,47 +68,24 @@ export default function Home() {
     }
   }, [screen, level, seenIntros]);
 
-  const checkQualifies = useCallback(async (reachedLevel, streakVal) => {
-    try {
-      const existing = await base44.entities.Score.filter({ created_by_id: myId }, "-level", 1);
-      if (!existing.length) return true;
-      const s = existing[0];
-      return reachedLevel > s.level || (reachedLevel === s.level && streakVal > s.streak);
-    } catch (e) {
-      return true;
-    }
-  }, [myId]);
+  const checkQualifies = useCallback((reachedLevel, streakVal) => {
+    const scores = loadHighScores();
+    const mine = displayName ? scores.filter((s) => s.player_name === displayName) : [];
+    if (!mine.length) return true;
+    const best = mine[0];
+    return reachedLevel > best.level || (reachedLevel === best.level && streakVal > best.streak);
+  }, [displayName]);
 
-  const submitScore = useCallback(async (reachedLevel, streakVal, name) => {
-    try {
-      const existing = await base44.entities.Score.filter({ created_by_id: myId }, "-level", 1);
-      if (existing.length) {
-        const s = existing[0];
-        if (reachedLevel > s.level || (reachedLevel === s.level && streakVal > s.streak)) {
-          await base44.entities.Score.update(s.id, {
-            level: reachedLevel,
-            streak: streakVal,
-            player_name: name,
-          });
-        }
-      } else {
-        await base44.entities.Score.create({
-          player_name: name,
-          level: reachedLevel,
-          streak: streakVal,
-        });
-      }
-    } catch (e) {
-      /* ignore */
-    }
-  }, [myId]);
+  const submitScore = useCallback((reachedLevel, streakVal, name) => {
+    addHighScore({ player_name: name, level: reachedLevel, streak: streakVal });
+  }, []);
 
-  const handleGameOver = useCallback(async () => {
+  const handleGameOver = useCallback(() => {
     const reachedLevel = level;
     const streakVal = streak;
-    if (await checkQualifies(reachedLevel, streakVal)) {
+    if (checkQualifies(reachedLevel, streakVal)) {
       if (displayName) {
-        await submitScore(reachedLevel, streakVal, displayName);
+        submitScore(reachedLevel, streakVal, displayName);
         setModal("gameover");
       } else {
         setPendingScore({ level: reachedLevel, streak: streakVal });
@@ -190,17 +148,17 @@ export default function Home() {
     setResetToken((t) => t + 1);
   };
 
-  const onNameSubmit = async (name) => {
+  const onNameSubmit = (name) => {
     setDisplayName(name);
-    if (pendingScore) await submitScore(pendingScore.level, pendingScore.streak, name);
+    if (pendingScore) submitScore(pendingScore.level, pendingScore.streak, name);
     setPendingScore(null);
     setModal("gameover");
   };
 
-  const onNameSkip = async () => {
+  const onNameSkip = () => {
     const name = generateGoofyName();
     setDisplayName(name);
-    if (pendingScore) await submitScore(pendingScore.level, pendingScore.streak, name);
+    if (pendingScore) submitScore(pendingScore.level, pendingScore.streak, name);
     setPendingScore(null);
     setModal("gameover");
   };
@@ -232,22 +190,29 @@ export default function Home() {
   };
 
   const handleBuyStar = async () => {
+    setBuying(true);
     try {
-      const res = await base44.functions.invoke("create-checkout", { productId: "star" });
-      const url = res?.data?.redirectUrl;
-      if (url) window.location.href = url;
-    } catch (e) {
-      /* ignore — stays on cosmetics screen */
+      const res = await purchaseProduct("star");
+      if (res?.ok) setStarOwned(true);
+      else if (res?.reason === "unavailable")
+        alert("In-app purchases are available in the installed app.");
+    } finally {
+      setBuying(false);
     }
   };
 
   const handleBuyAdFree = async () => {
+    setBuying(true);
     try {
-      const res = await base44.functions.invoke("create-checkout", { productId: "adfree" });
-      const url = res?.data?.redirectUrl;
-      if (url) window.location.href = url;
-    } catch (e) {
-      /* ignore */
+      const res = await purchaseProduct("adfree");
+      if (res?.ok) {
+        setAdFree(true);
+        setLives(6);
+      } else if (res?.reason === "unavailable") {
+        alert("In-app purchases are available in the installed app.");
+      }
+    } finally {
+      setBuying(false);
     }
   };
 
@@ -269,7 +234,7 @@ export default function Home() {
         />
         <AnimatePresence>
           {showBoard && (
-            <LeaderboardModal myId={myId} onClose={() => setShowBoard(false)} />
+            <LeaderboardModal onClose={() => setShowBoard(false)} />
           )}
         </AnimatePresence>
       </div>
@@ -294,6 +259,7 @@ export default function Home() {
         setHunterColor={setHunterColor}
         starOwned={starOwned}
         onBuyStar={handleBuyStar}
+        buying={buying}
         onBack={() => setScreen("menu")}
       />
     );
@@ -337,7 +303,7 @@ export default function Home() {
               )}
               {modal === "nameprompt" && (
                 <NamePromptModal
-                  defaultValue={myName}
+                  defaultValue={displayName || ""}
                   score={pendingScore}
                   onSubmit={onNameSubmit}
                   onSkip={onNameSkip}
@@ -351,7 +317,7 @@ export default function Home() {
                 <ObstacleIntroModal obstacleKey={intro} onContinue={dismissIntro} />
               )}
               {showBoard && (
-                <LeaderboardModal myId={myId} onClose={() => setShowBoard(false)} />
+                <LeaderboardModal onClose={() => setShowBoard(false)} />
               )}
             </AnimatePresence>
           </div>
