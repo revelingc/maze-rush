@@ -161,7 +161,7 @@ export default function Home() {
   const cfg = getLevelConfig(level);
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-950 text-white">
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-slate-950 text-white">
       <Header
         level={level}
         lives={lives}
@@ -176,7 +176,7 @@ export default function Home() {
           <p className="text-center text-xs text-white/40">
             Drag the pad below to steer — reach the glowing exit before time runs out.
           </p>
-          <div className="relative min-h-0 flex-[4]">
+          <div className="relative min-h-0 flex-1">
             <MazeCanvas
               pointer={pointer}
               level={level}
@@ -206,7 +206,7 @@ export default function Home() {
               )}
             </AnimatePresence>
           </div>
-          <div className="min-h-0 flex-[1]">
+          <div className="h-32 shrink-0">
             <ControlPad pointer={pointer} disabled={!running} />
           </div>
         </div>
