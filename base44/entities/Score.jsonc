@@ -1,0 +1,31 @@
+{
+  "name": "Score",
+  "type": "object",
+  "properties": {
+    "player_name": {
+      "type": "string"
+    },
+    "level": {
+      "type": "number"
+    },
+    "streak": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "player_name",
+    "level"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

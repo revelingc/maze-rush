@@ -4,29 +4,24 @@ export function loadState() {
   try {
     const raw = localStorage.getItem(KEY);
     if (raw) {
-      const parsed = JSON.parse(raw);
+      const p = JSON.parse(raw);
+      const num = (v, d) => (Number.isFinite(v) && v >= 0 ? v : d);
       return {
-        level: Number.isFinite(parsed.level) && parsed.level >= 1 ? parsed.level : 1,
-        lives: Number.isFinite(parsed.lives) && parsed.lives >= 0 ? parsed.lives : 3,
+        level: num(p.level, 1),
+        lives: num(p.lives, 3),
+        streak: num(p.streak, 0),
+        bestStreak: num(p.bestStreak, 0),
       };
     }
   } catch (e) {
     /* ignore */
   }
-  return { level: 1, lives: 3 };
+  return { level: 1, lives: 3, streak: 0, bestStreak: 0 };
 }
 
 export function saveState(state) {
   try {
     localStorage.setItem(KEY, JSON.stringify(state));
-  } catch (e) {
-    /* ignore */
-  }
-}
-
-export function clearState() {
-  try {
-    localStorage.removeItem(KEY);
   } catch (e) {
     /* ignore */
   }

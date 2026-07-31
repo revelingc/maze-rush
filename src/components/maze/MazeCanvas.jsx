@@ -1,15 +1,20 @@
 import React, { useEffect, useRef } from "react";
-import { generateMaze, getLevelConfig, resolveCollisions, updateHazard } from "@/lib/mazeGenerator";
+import {
+  generateMaze,
+  getLevelConfig,
+  resolveCollisions,
+  updateHazard,
+} from "@/lib/mazeGenerator";
 import { renderGame } from "@/lib/mazeRenderer";
 
+const VISIBLE_CELLS = 7; // cells shown across the viewport
+
 /**
- * Core maze game canvas.
+ * Scrolling maze runner. The world scrolls beneath the runner; the thumb
+ * acts as a relative joystick to steer at speed (2D Maze Runner feel).
+ *
  * Props:
- *  - level: current level number
- *  - running: whether the simulation should advance
- *  - resetToken: bump to regenerate the current level (e.g. after a life lost)
- *  - onLevelComplete(): called when the orb reaches the exit
- *  - onLifeLost(): called when the timer runs out or a hazard hits the orb
+ *  - level, running, resetToken, onLevelComplete, onLifeLost
  */
 export default function MazeCanvas({ level, running, resetToken, onLevelComplete, onLifeLost }) {
   const canvasRef = useRef(null);
@@ -18,14 +23,13 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
   const rafRef = useRef(null);
   const lastRef = useRef(0);
   const deadRef = useRef(false);
-  const pointer = useRef({ active: false, x: 0, y: 0 });
+  const pointer = useRef({ active: false, ax: 0, ay: 0, x: 0, y: 0 });
 
   const cbRef = useRef({ onLevelComplete, onLifeLost });
   cbRef.current = { onLevelComplete, onLifeLost };
   const runningRef = useRef(running);
   runningRef.current = running;
 
-  // (Re)build the level whenever the level or resetToken changes.
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -34,7 +38,7 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
     const cfg = getLevelConfig(level);
     const maze = generateMaze(cfg.cols, cfg.rows);
     const rect = container.getBoundingClientRect();
-    const size = Math.max(200, Math.min(rect.width, rect.height));
+    const size = Math.max(220, Math.min(rect.width, rect.height));
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = size * dpr;
     canvas.height = size * dpr;
@@ -43,8 +47,10 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const cs = size / cfg.cols;
-    const ball = { x: cs / 2, y: cs / 2, r: cs * 0.3 };
+    const cs = size / VISIBLE_CELLS;
+    const worldW = cfg.cols * cs;
+    const worldH = cfg.rows * cs;
+    const ball = { x: cs / 2, y: cs / 2, r: cs * 0.3, vx: 0, vy: 0 };
 
     const hazards = [];
     const used = new Set([0]);
@@ -55,7 +61,7 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
         cy = Math.floor(Math.random() * cfg.rows);
         key = cy * cfg.cols + cx;
         tries++;
-      } while ((used.has(key) || (cx <= 1 && cy <= 1)) && tries < 60);
+      } while ((used.has(key) || (cx <= 2 && cy <= 2)) && tries < 80);
       used.add(key);
       const cell = maze.grid[key];
       const valid = [0, 1, 2, 3].filter((dd) => !cell.walls[dd]);
@@ -74,18 +80,11 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
     }
 
     stateRef.current = {
-      maze,
-      cs,
-      ball,
-      hazards,
+      maze, cs, ball, hazards,
       exitX: (cfg.cols - 1) * cs + cs / 2,
       exitY: (cfg.rows - 1) * cs + cs / 2,
-      timer: cfg.timer,
-      timerMax: cfg.timer,
-      invuln: 1.0,
-      cfg,
-      size,
-      ctx,
+      timer: cfg.timer, timerMax: cfg.timer, invuln: 1.0,
+      cfg, size, ctx, worldW, worldH, camX: 0, camY: 0,
     };
 
     deadRef.current = false;
@@ -93,7 +92,6 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
     lastRef.current = performance.now();
   }, [level, resetToken]);
 
-  // Handle container resize by rescaling positions.
   useEffect(() => {
     const onResize = () => {
       const st = stateRef.current;
@@ -101,7 +99,7 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       const canvas = canvasRef.current;
       if (!st || !container || !canvas) return;
       const rect = container.getBoundingClientRect();
-      const size = Math.max(200, Math.min(rect.width, rect.height));
+      const size = Math.max(220, Math.min(rect.width, rect.height));
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = size * dpr;
       canvas.height = size * dpr;
@@ -109,26 +107,21 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       canvas.style.height = size + "px";
       const ctx = canvas.getContext("2d");
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const scale = size / st.size;
+      const newCs = size / VISIBLE_CELLS;
+      const ratio = newCs / st.cs;
       st.size = size;
-      st.cs = size / st.cfg.cols;
-      st.ball.x *= scale;
-      st.ball.y *= scale;
-      st.ball.r = st.cs * 0.3;
-      st.exitX *= scale;
-      st.exitY *= scale;
-      for (const h of st.hazards) {
-        h.x *= scale;
-        h.y *= scale;
-        h.r = st.cs * 0.27;
-      }
+      st.cs = newCs;
+      st.worldW = st.cfg.cols * newCs;
+      st.worldH = st.cfg.rows * newCs;
+      st.ball.x *= ratio; st.ball.y *= ratio; st.ball.r = newCs * 0.3;
+      st.exitX *= ratio; st.exitY *= ratio;
+      for (const h of st.hazards) { h.x *= ratio; h.y *= ratio; h.r = newCs * 0.27; }
       st.ctx = ctx;
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // Render + simulation loop.
   useEffect(() => {
     const loop = (now) => {
       rafRef.current = requestAnimationFrame(loop);
@@ -153,13 +146,10 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     if (type === "down") {
-      pointer.current = { active: true, x, y };
+      pointer.current = { active: true, ax: x, ay: y, x, y };
       canvasRef.current.setPointerCapture?.(e.pointerId);
     } else if (type === "move") {
-      if (pointer.current.active) {
-        pointer.current.x = x;
-        pointer.current.y = y;
-      }
+      if (pointer.current.active) { pointer.current.x = x; pointer.current.y = y; }
     } else {
       pointer.current.active = false;
     }
@@ -181,8 +171,43 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
   );
 }
 
+function clamp(v, lo, hi) {
+  return Math.max(lo, Math.min(hi, v));
+}
+
+function updateCamera(st) {
+  const { ball, size, worldW, worldH } = st;
+  const loX = worldW <= size ? (worldW - size) / 2 : 0;
+  const hiX = worldW <= size ? (worldW - size) / 2 : worldW - size;
+  const loY = worldH <= size ? (worldH - size) / 2 : 0;
+  const hiY = worldH <= size ? (worldH - size) / 2 : worldH - size;
+  st.camX = clamp(ball.x - size / 2, loX, hiX);
+  st.camY = clamp(ball.y - size / 2, loY, hiY);
+}
+
 function updateGame(st, dt, pointer, deadRef, cbRef) {
-  const { ball, cs, maze, hazards, cfg, size } = st;
+  const { ball, cs, maze, hazards, cfg } = st;
+  const maxSpeed = cs * 16;
+  const maxR = st.size * 0.22;
+
+  // joystick -> velocity
+  if (pointer.current.active) {
+    const dx = pointer.current.x - pointer.current.ax;
+    const dy = pointer.current.y - pointer.current.ay;
+    const mag = Math.hypot(dx, dy);
+    if (mag > 6) {
+      const clamped = Math.min(mag, maxR);
+      const speed = (clamped / maxR) * maxSpeed;
+      ball.vx = (dx / mag) * speed;
+      ball.vy = (dy / mag) * speed;
+    } else {
+      ball.vx *= 0.7;
+      ball.vy *= 0.7;
+    }
+  } else {
+    ball.vx *= 0.8;
+    ball.vy *= 0.8;
+  }
 
   // timer
   st.timer -= dt;
@@ -191,45 +216,39 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
     st.invuln = 1.2;
     ball.x = cs / 2;
     ball.y = cs / 2;
+    ball.vx = 0;
+    ball.vy = 0;
     pointer.current.active = false;
     deadRef.current = true;
     cbRef.current.onLifeLost();
     return;
   }
 
-  // move ball toward pointer
-  if (pointer.current.active) {
-    const tx = pointer.current.x;
-    const ty = pointer.current.y;
-    const dx = tx - ball.x;
-    const dy = ty - ball.y;
-    const dist = Math.hypot(dx, dy);
-    const maxSpeed = cs * 14;
-    const step = Math.min(dist, maxSpeed * dt);
-    if (dist > 0.001) {
-      ball.x += (dx / dist) * step;
-      ball.y += (dy / dist) * step;
-    }
+  // substepped movement + collision (prevents tunneling at high speed)
+  const moveLen = Math.hypot(ball.vx, ball.vy) * dt;
+  const steps = Math.max(1, Math.ceil(moveLen / (cs * 0.25)));
+  for (let i = 0; i < steps; i++) {
+    ball.x += (ball.vx * dt) / steps;
+    ball.y += (ball.vy * dt) / steps;
+    for (let r = 0; r < 3; r++) resolveCollisions(ball, maze, cs);
   }
+  ball.x = clamp(ball.x, ball.r, st.worldW - ball.r);
+  ball.y = clamp(ball.y, ball.r, st.worldH - ball.r);
 
-  // resolve wall collisions (a few iterations for stability)
-  for (let i = 0; i < 3; i++) resolveCollisions(ball, maze, cs);
-  ball.x = Math.max(ball.r, Math.min(size - ball.r, ball.x));
-  ball.y = Math.max(ball.r, Math.min(size - ball.r, ball.y));
+  updateCamera(st);
 
-  // hazards
   for (const h of hazards) updateHazard(h, dt, maze, cs);
 
-  // invulnerability countdown
   if (st.invuln > 0) st.invuln -= dt;
 
-  // hazard collision
   if (st.invuln <= 0) {
     for (const h of hazards) {
       if (Math.hypot(h.x - ball.x, h.y - ball.y) < h.r + ball.r) {
         st.invuln = 1.5;
         ball.x = cs / 2;
         ball.y = cs / 2;
+        ball.vx = 0;
+        ball.vy = 0;
         pointer.current.active = false;
         deadRef.current = true;
         cbRef.current.onLifeLost();
@@ -238,7 +257,6 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
     }
   }
 
-  // exit reached
   if (Math.hypot(ball.x - st.exitX, ball.y - st.exitY) < cs * 0.4) {
     deadRef.current = true;
     cbRef.current.onLevelComplete();

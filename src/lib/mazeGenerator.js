@@ -54,14 +54,15 @@ export function generateMaze(cols, rows) {
 
 /**
  * Returns the difficulty configuration for a given level.
- * Difficulty grows ~5% per level (compound).
+ * Difficulty grows ~5% per level (compound). Mazes are larger now and
+ * scroll beneath the runner, so timers are a bit more generous.
  */
 export function getLevelConfig(level) {
   const d = Math.pow(1.05, level - 1); // 5% harder each level
-  const size = Math.min(30, Math.round(7 + (level - 1) * 0.85));
-  const hazards = level >= 3 ? Math.min(10, Math.floor((level - 1) / 1.5)) : 0;
-  const hazardSpeed = Math.min(95, 28 * d);
-  const timer = Math.max(18, Math.round(46 / d));
+  const size = Math.min(40, 10 + Math.round((level - 1) * 1.1));
+  const hazards = level >= 3 ? Math.min(12, Math.floor((level - 1) / 1.3)) : 0;
+  const hazardSpeed = Math.min(125, 32 * d);
+  const timer = Math.max(20, Math.round(58 / d));
   return {
     level,
     cols: size,
@@ -87,7 +88,6 @@ function resolveCircleSegment(ball, x1, y1, x2, y2) {
   let dist = Math.hypot(ndx, ndy);
   if (dist >= ball.r) return;
   if (dist < 0.0001) {
-    // center exactly on the wall — nudge along segment normal
     ndx = -dy;
     ndy = dx;
     dist = Math.hypot(ndx, ndy) || 1;
@@ -123,7 +123,6 @@ export function resolveCollisions(ball, maze, cs) {
 
 /**
  * Advances a hazard along the maze corridors.
- * Hazards walk from cell-center to cell-center, turning at junctions.
  */
 export function updateHazard(h, dt, maze, cs) {
   const tcx = h.targetX * cs + cs / 2;

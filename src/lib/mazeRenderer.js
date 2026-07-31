@@ -1,24 +1,41 @@
-// Canvas renderer for Maze Rush.
+// Canvas renderer for Maze Rush (scrolling world + joystick overlay).
+
+function edgePoint(ang, w, h, margin) {
+  const dx = Math.cos(ang);
+  const dy = Math.sin(ang);
+  const hx = w / 2 - margin;
+  const hy = h / 2 - margin;
+  const tx = Math.abs(dx) < 1e-6 ? Infinity : hx / Math.abs(dx);
+  const ty = Math.abs(dy) < 1e-6 ? Infinity : hy / Math.abs(dy);
+  const t = Math.min(tx, ty);
+  return { x: w / 2 + dx * t, y: h / 2 + dy * t };
+}
 
 export function renderGame(ctx, st) {
-  const { maze, cs, ball, hazards, exitX, exitY, timer, timerMax, invuln, size } = st;
+  const {
+    maze, cs, ball, hazards, exitX, exitY,
+    timer, timerMax, invuln, size, camX, camY, worldW, worldH, pointer,
+  } = st;
   const now = performance.now();
 
-  // background
   ctx.clearRect(0, 0, size, size);
   ctx.fillStyle = "#0B0F1A";
   ctx.fillRect(0, 0, size, size);
+
+  // ---- world layer (scrolled) ----
+  ctx.save();
+  ctx.translate(-camX, -camY);
 
   // start cell glow
   ctx.fillStyle = "rgba(94,234,212,0.07)";
   ctx.fillRect(0, 0, cs, cs);
 
-  // exit (pulsing emerald)
+  // exit beacon
   const pulse = 0.5 + 0.5 * Math.sin(now / 300);
   ctx.save();
-  ctx.shadowBlur = 22;
+  ctx.shadowBlur = 24;
   ctx.shadowColor = "#34D399";
-  ctx.fillStyle = `rgba(52,211,153,${0.65 + 0.3 * pulse})`;
+  ctx.fillStyle = `rgba(52,211,153,${0.6 + 0.35 * pulse})`;
   ctx.beginPath();
   ctx.arc(exitX, exitY, cs * 0.33, 0, Math.PI * 2);
   ctx.fill();
@@ -34,22 +51,10 @@ export function renderGame(ctx, st) {
   for (const cell of maze.grid) {
     const x = cell.x * cs;
     const y = cell.y * cs;
-    if (cell.walls[0]) {
-      ctx.moveTo(x, y);
-      ctx.lineTo(x + cs, y);
-    }
-    if (cell.walls[1]) {
-      ctx.moveTo(x + cs, y);
-      ctx.lineTo(x + cs, y + cs);
-    }
-    if (cell.walls[2]) {
-      ctx.moveTo(x, y + cs);
-      ctx.lineTo(x + cs, y + cs);
-    }
-    if (cell.walls[3]) {
-      ctx.moveTo(x, y);
-      ctx.lineTo(x, y + cs);
-    }
+    if (cell.walls[0]) { ctx.moveTo(x, y); ctx.lineTo(x + cs, y); }
+    if (cell.walls[1]) { ctx.moveTo(x + cs, y); ctx.lineTo(x + cs, y + cs); }
+    if (cell.walls[2]) { ctx.moveTo(x, y + cs); ctx.lineTo(x + cs, y + cs); }
+    if (cell.walls[3]) { ctx.moveTo(x, y); ctx.lineTo(x, y + cs); }
   }
   ctx.stroke();
   ctx.shadowBlur = 0;
@@ -70,11 +75,56 @@ export function renderGame(ctx, st) {
   const blink = invuln > 0 && Math.floor(now / 90) % 2 === 0;
   if (!blink) {
     ctx.save();
-    ctx.shadowBlur = 20;
+    ctx.shadowBlur = 22;
     ctx.shadowColor = "#5EEAD4";
     ctx.fillStyle = "#5EEAD4";
     ctx.beginPath();
     ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  ctx.restore(); // back to screen space
+
+  // ---- screen-space UI ----
+
+  // exit direction arrow (when exit is off-screen)
+  const exScreen = exitX - camX;
+  const eyScreen = exitY - camY;
+  if (exScreen < 0 || exScreen > size || eyScreen < 0 || eyScreen > size) {
+    const ang = Math.atan2(eyScreen - size / 2, exScreen - size / 2);
+    const p = edgePoint(ang, size, size, size * 0.09);
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(ang);
+    ctx.fillStyle = "rgba(52,211,153,0.9)";
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = "#34D399";
+    ctx.beginPath();
+    ctx.moveTo(size * 0.04, 0);
+    ctx.lineTo(-size * 0.025, -size * 0.03);
+    ctx.lineTo(-size * 0.025, size * 0.03);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // joystick overlay
+  if (pointer.active) {
+    const maxR = size * 0.22;
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,0.14)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(pointer.ax, pointer.ay, maxR, 0, Math.PI * 2);
+    ctx.stroke();
+    let kx = pointer.x - pointer.ax;
+    let ky = pointer.y - pointer.ay;
+    const km = Math.hypot(kx, ky);
+    if (km > maxR) { kx = (kx / km) * maxR; ky = (ky / km) * maxR; }
+    ctx.fillStyle = "rgba(94,234,212,0.85)";
+    ctx.beginPath();
+    ctx.arc(pointer.ax + kx, pointer.ay + ky, size * 0.05, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }
@@ -86,4 +136,7 @@ export function renderGame(ctx, st) {
   ctx.fillRect(0, 0, size, barH);
   ctx.fillStyle = pct > 0.3 ? "#5EEAD4" : "#FB7185";
   ctx.fillRect(0, 0, size * pct, barH);
+
+  // silence unused
+  void worldW; void worldH;
 }
