@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Skull, Film, RotateCcw, Share2 } from "lucide-react";
 
-export default function GameOverModal({ level, streak, onWatchAd, onRestart, onShare }) {
+export default function GameOverModal({ level, streak, canWatchAd, onWatchAd, onRestart, onShare }) {
   return (
     <Backdrop>
       <div className="text-center">
@@ -15,20 +15,23 @@ export default function GameOverModal({ level, streak, onWatchAd, onRestart, onS
         <h2 className="mt-2 text-3xl font-semibold text-white">Game Over</h2>
         <p className="mt-3 text-sm text-white/50">
           You reached <span className="text-white/80">Level {level}</span>
-          {streak ? <> with a <span className="text-white/80">{streak}-streak</span></> : null}. Continue right where you are.
+          {streak ? <> with a <span className="text-white/80">{streak}-streak</span></> : null}.
+          {canWatchAd ? " Continue right where you are." : " Your run is over — restart to play again."}
         </p>
 
         <div className="mt-6 space-y-2.5">
-          <button
-            onClick={() => onWatchAd("standard")}
-            className="flex w-full items-center justify-between rounded-xl bg-white/5 px-4 py-3.5 text-left ring-1 ring-white/10 transition hover:bg-white/10 active:scale-[0.98]"
-          >
-            <span className="flex items-center gap-3">
-              <Film className="h-4 w-4 text-sky-300" />
-              <span className="text-sm font-medium text-white">Watch ad</span>
-            </span>
-            <span className="text-sm font-semibold text-sky-300">+3 lives</span>
-          </button>
+          {canWatchAd && (
+            <button
+              onClick={() => onWatchAd("standard")}
+              className="flex w-full items-center justify-between rounded-xl bg-white/5 px-4 py-3.5 text-left ring-1 ring-white/10 transition hover:bg-white/10 active:scale-[0.98]"
+            >
+              <span className="flex items-center gap-3">
+                <Film className="h-4 w-4 text-sky-300" />
+                <span className="text-sm font-medium text-white">Watch ad</span>
+              </span>
+              <span className="text-sm font-semibold text-sky-300">+3 lives</span>
+            </button>
+          )}
           <button
             onClick={onShare}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-400/15 px-4 py-3.5 text-sm font-semibold text-teal-200 ring-1 ring-teal-300/30 transition hover:bg-teal-400/25 active:scale-[0.98]"

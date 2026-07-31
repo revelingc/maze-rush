@@ -49,6 +49,7 @@ export default function Home() {
   const [resetToken, setResetToken] = useState(0);
   const [modal, setModal] = useState(null);
   const [ad, setAd] = useState(null);
+  const [adUsed, setAdUsed] = useState(false);
   const [showBoard, setShowBoard] = useState(false);
   const [displayName, setDisplayName] = useState(initial.displayName || null);
   const [pendingScore, setPendingScore] = useState(null);
@@ -174,6 +175,7 @@ export default function Home() {
     setLevel(1);
     setLives(adFree ? 6 : 3);
     setStreak(0);
+    setAdUsed(false);
     setModal(null);
     setRunning(true);
     setResetToken((t) => t + 1);
@@ -187,8 +189,7 @@ export default function Home() {
   const onAdComplete = () => {
     const gain = ad === "premium" ? 6 : 3;
     setAd(null);
-    setLevel(1);
-    setStreak(0);
+    setAdUsed(true);
     setLives(gain);
     setRunning(true);
     setResetToken((t) => t + 1);
@@ -214,6 +215,7 @@ export default function Home() {
       setLevel(1);
       setLives(adFree ? 6 : 3);
       setStreak(0);
+      setAdUsed(false);
     }
     setModal(null);
     setAd(null);
@@ -256,6 +258,7 @@ export default function Home() {
         setLives(6);
         setLevel(1);
         setStreak(0);
+        setAdUsed(false);
         setResetToken((t) => t + 1);
       } else if (res?.reason === "unavailable") {
         alert("In-app purchases are available in the installed app.");
@@ -434,6 +437,7 @@ export default function Home() {
                 <GameOverModal
                   level={level}
                   streak={streak}
+                  canWatchAd={!adUsed}
                   onWatchAd={watchAd}
                   onRestart={restart}
                   onShare={handleShare}
