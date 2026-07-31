@@ -91,8 +91,8 @@ export function getLevelConfig(level) {
   const hazardSpeed = Math.min(240, 80 * d);
   const timer = Math.max(20, Math.round(58 / d));
   const lasers = level >= 12 ? Math.min(5, Math.floor((level - 12) / 5) + 1) : 0;
-  const hunters = level >= 24 ? Math.min(2, Math.floor((level - 24) / 6) + 1) : 0;
-  const hunterSpeed = Math.min(150, 55 * d);
+  const hunters = level >= 24 ? 1 : 0;
+  const hunterSpeed = Math.min(50, 20 * d);
   return {
     level,
     cols: size,
