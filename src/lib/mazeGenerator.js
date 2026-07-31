@@ -106,7 +106,9 @@ export function getLevelConfig(level, cycle = 1) {
   const size = Math.min(40, 10 + Math.round((level - 1) * 1.1));
   const hazards = level >= 3 ? Math.min(12, Math.floor((level - 1) / 1.3)) : 0;
   const hazardSpeed = Math.min(240, 80 * d);
-  const timer = Math.max(20, Math.round(58 / d));
+  // Timer starts high and decays gently (sqrt of difficulty) so late levels
+  // still give enough time to navigate the larger, scrolling mazes.
+  const timer = Math.max(30, Math.round(95 / Math.sqrt(d)));
   const lasers = level >= 12 ? Math.min(5, Math.floor((level - 12) / 5) + 1) : 0;
   const hunters = level >= 24 ? 1 : 0;
   const hunterSpeed = Math.min(50, 20 * d);

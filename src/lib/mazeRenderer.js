@@ -128,14 +128,22 @@ export function renderGame(ctx, st) {
   ctx.stroke();
   ctx.shadowBlur = 0;
 
-  // hazards
+  // hazards (rotating hexagons)
   for (const hz of hazards) {
     ctx.save();
+    ctx.translate(hz.x, hz.y);
+    ctx.rotate(now / 1400);
     ctx.shadowBlur = 16;
     ctx.shadowColor = hc;
     ctx.fillStyle = hc;
     ctx.beginPath();
-    ctx.arc(hz.x, hz.y, hz.r, 0, Math.PI * 2);
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI / 3) * i - Math.PI / 2;
+      const px = Math.cos(a) * hz.r;
+      const py = Math.sin(a) * hz.r;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
     ctx.fill();
     ctx.restore();
   }
@@ -177,24 +185,47 @@ export function renderGame(ctx, st) {
     ctx.restore();
   }
 
-  // hunters (homing)
-  const hpulse = 0.5 + 0.5 * Math.sin(now / 180);
+  // hunters (homing ships tracking the player)
   for (const hu of hunters) {
+    const speed = Math.hypot(hu.vx, hu.vy);
+    const ang = speed > 1
+      ? Math.atan2(hu.vy, hu.vx)
+      : Math.atan2(ball.y - hu.y, ball.x - hu.x);
     ctx.save();
+    ctx.translate(hu.x, hu.y);
+    ctx.rotate(ang);
+    // ship body: arrowhead pointing forward (+x)
     ctx.shadowBlur = 16;
     ctx.shadowColor = uc;
     ctx.fillStyle = uc;
     ctx.beginPath();
-    ctx.arc(hu.x, hu.y, hu.r, 0, Math.PI * 2);
+    ctx.moveTo(hu.r * 1.15, 0);
+    ctx.lineTo(-hu.r * 0.7, -hu.r * 0.75);
+    ctx.lineTo(-hu.r * 0.35, 0);
+    ctx.lineTo(-hu.r * 0.7, hu.r * 0.75);
+    ctx.closePath();
+    ctx.fill();
+    // rocket flame at the back (flickering)
+    const flick = 0.6 + 0.4 * Math.sin(now / 60);
+    ctx.save();
+    ctx.globalAlpha = 0.9;
+    ctx.shadowColor = "#FB923C";
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = "#FB923C";
+    ctx.beginPath();
+    ctx.moveTo(-hu.r * 0.35, -hu.r * 0.3);
+    ctx.lineTo(-hu.r * (0.95 + 0.5 * flick), 0);
+    ctx.lineTo(-hu.r * 0.35, hu.r * 0.3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "#FDE68A";
+    ctx.beginPath();
+    ctx.moveTo(-hu.r * 0.35, -hu.r * 0.16);
+    ctx.lineTo(-hu.r * (0.6 + 0.3 * flick), 0);
+    ctx.lineTo(-hu.r * 0.35, hu.r * 0.16);
+    ctx.closePath();
     ctx.fill();
     ctx.restore();
-    ctx.save();
-    ctx.globalAlpha = 0.35 + 0.4 * hpulse;
-    ctx.strokeStyle = uc;
-    ctx.lineWidth = Math.max(1.5, cs * 0.04);
-    ctx.beginPath();
-    ctx.arc(hu.x, hu.y, hu.r + cs * 0.12 + cs * 0.05 * hpulse, 0, Math.PI * 2);
-    ctx.stroke();
     ctx.restore();
   }
 
