@@ -3,16 +3,16 @@
 // Shooting Star purchase (price 0, unlocked via starOwned).
 
 export const TRAILS = [
-  { id: "bubbles",  name: "Bubbles",  skinId: "default", color: "#5EEAD4", price: 0.99, style: "bubble",   desc: "Translucent bubbles rise and pop behind your dot." },
-  { id: "mist",     name: "Mist",     skinId: "sky",     color: "#38BDF8", price: 0.99, style: "puff",     desc: "A soft, drifting cloud of misty puffs." },
-  { id: "sparkle",  name: "Sparkle",  skinId: "violet",  color: "#A78BFA", price: 0.99, style: "sparkle",  desc: "Shimmering glitter that twinkles and fades." },
-  { id: "petals",   name: "Petals",   skinId: "rose",    color: "#FB7185", price: 0.99, style: "petal",    desc: "Delicate flower petals drift down in your wake." },
-  { id: "embers",   name: "Embers",   skinId: "amber",   color: "#FBBF24", price: 0.99, style: "ember",    desc: "Glowing embers float upward like a dying fire." },
-  { id: "leaves",   name: "Leaves",   skinId: "emerald", color: "#34D399", price: 0.99, style: "leaf",     desc: "Autumn leaves flutter and spin behind you." },
-  { id: "hearts",   name: "Hearts",   skinId: "pink",    color: "#F472B6", price: 0.99, style: "heart",    desc: "Tiny floating hearts trail your every move." },
-  { id: "pixels",   name: "Pixels",   skinId: "lime",    color: "#A3E635", price: 0.99, style: "pixel",    desc: "Blocky 8-bit pixels stack up behind your dot." },
-  { id: "flames",   name: "Flames",   skinId: "orange",  color: "#FB923C", price: 0.99, style: "flame",    desc: "Flickering flame tongues lick up from your path." },
-  { id: "galaxy",   name: "Galaxy",   skinId: "indigo",  color: "#818CF8", price: 0.99, style: "galaxy",   desc: "Swirling star fragments from a distant galaxy." },
+  { id: "bubbles",  name: "Bubbles",  skinId: "default", color: "#5EEAD4", price: 2.99, style: "bubble",   desc: "Translucent bubbles rise and pop behind your dot." },
+  { id: "mist",     name: "Mist",     skinId: "sky",     color: "#38BDF8", price: 2.99, style: "puff",     desc: "A soft, drifting cloud of misty puffs." },
+  { id: "sparkle",  name: "Sparkle",  skinId: "violet",  color: "#A78BFA", price: 2.99, style: "sparkle",  desc: "Shimmering glitter that twinkles and fades." },
+  { id: "petals",   name: "Petals",   skinId: "rose",    color: "#FB7185", price: 2.99, style: "petal",    desc: "Delicate flower petals drift down in your wake." },
+  { id: "embers",   name: "Embers",   skinId: "amber",   color: "#FBBF24", price: 2.99, style: "ember",    desc: "Glowing embers float upward like a dying fire." },
+  { id: "leaves",   name: "Leaves",   skinId: "emerald", color: "#34D399", price: 2.99, style: "leaf",     desc: "Autumn leaves flutter and spin behind you." },
+  { id: "hearts",   name: "Hearts",   skinId: "pink",    color: "#F472B6", price: 2.99, style: "heart",    desc: "Tiny floating hearts trail your every move." },
+  { id: "pixels",   name: "Pixels",   skinId: "lime",    color: "#A3E635", price: 2.99, style: "pixel",    desc: "Blocky 8-bit pixels stack up behind your dot." },
+  { id: "flames",   name: "Flames",   skinId: "orange",  color: "#FB923C", price: 2.99, style: "flame",    desc: "Flickering flame tongues lick up from your path." },
+  { id: "galaxy",   name: "Galaxy",   skinId: "indigo",  color: "#818CF8", price: 2.99, style: "galaxy",   desc: "Swirling star fragments from a distant galaxy." },
   { id: "stardust", name: "Stardust", skinId: "star",    color: "#FDE68A", price: 0,    style: "stardust", desc: "A golden shower of stardust. Bundled with Shooting Star.", star: true },
 ];
 

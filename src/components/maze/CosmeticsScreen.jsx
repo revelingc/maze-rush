@@ -142,7 +142,7 @@ export default function CosmeticsScreen({
                       disabled={buying}
                       className="rounded-full bg-amber-400 px-3 py-1 text-[11px] font-semibold text-amber-950 transition hover:bg-amber-300 disabled:opacity-60"
                     >
-                      {buying ? "…" : "Star $1.99"}
+                      {buying ? "…" : "Star $3.99"}
                     </button>
                   ) : owned ? (
                     <button

@@ -89,7 +89,7 @@ export default function MainMenu({ bestLevel, bestStreak, skinObj, onPlay, onCos
               <p className="mt-1 text-sm text-white/50">
                 Always have six lives and never see another ad.
               </p>
-              <p className="mt-3 text-2xl font-bold text-emerald-300">$3.99</p>
+              <p className="mt-3 text-2xl font-bold text-emerald-300">$5.99</p>
               <button
                 onClick={() => {
                   setConfirmAdFree(false);
