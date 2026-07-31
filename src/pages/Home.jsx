@@ -59,8 +59,6 @@ export default function Home() {
 
   const livesRef = useRef(lives);
   livesRef.current = lives;
-  const adFreeRef = useRef(adFree);
-  adFreeRef.current = adFree;
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
   const pointer = useRef({ active: false, ax: 0, ay: 0, x: 0, y: 0, maxR: 70 });
@@ -139,11 +137,6 @@ export default function Home() {
     const s = settingsRef.current;
     if (s.hapticsEnabled && typeof navigator !== "undefined" && navigator.vibrate) {
       navigator.vibrate(Math.max(10, Math.round(s.vibrationAmount)));
-    }
-    if (adFreeRef.current) {
-      // Ad-free players always have six lives — just retry the level.
-      setResetToken((t) => t + 1);
-      return;
     }
     const nl = livesRef.current - 1;
     if (nl <= 0) {
