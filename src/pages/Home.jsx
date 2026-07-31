@@ -28,7 +28,9 @@ export default function Home() {
   const [skin, setSkin] = useState(initial.skin || "default");
   const [wallColor, setWallColor] = useState(initial.wallColor || "#39496B");
   const [bgColor, setBgColor] = useState(initial.bgColor || "#0B0F1A");
-  const [obstacleColor, setObstacleColor] = useState(initial.obstacleColor || "#FB7185");
+  const [hazardColor, setHazardColor] = useState(initial.hazardColor || "#FB7185");
+  const [laserColor, setLaserColor] = useState(initial.laserColor || "#22D3EE");
+  const [hunterColor, setHunterColor] = useState(initial.hunterColor || "#A855F7");
   const [starOwned, setStarOwned] = useState(!!initial.starOwned);
   const [adFree, setAdFree] = useState(!!initial.adFree);
   const [seenIntros, setSeenIntros] = useState(initial.seenIntros || []);
@@ -68,7 +70,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    saveState({ level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, obstacleColor, starOwned, seenIntros, displayName, adFree });
+    saveState({ level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, hazardColor, laserColor, hunterColor, starOwned, seenIntros, displayName, adFree });
   }, [level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned, seenIntros]);
 
   useEffect(() => {
@@ -284,8 +286,12 @@ export default function Home() {
         setWallColor={setWallColor}
         bgColor={bgColor}
         setBgColor={setBgColor}
-        obstacleColor={obstacleColor}
-        setObstacleColor={setObstacleColor}
+        hazardColor={hazardColor}
+        setHazardColor={setHazardColor}
+        laserColor={laserColor}
+        setLaserColor={setLaserColor}
+        hunterColor={hunterColor}
+        setHunterColor={setHunterColor}
         starOwned={starOwned}
         onBuyStar={handleBuyStar}
         onBack={() => setScreen("menu")}
@@ -321,7 +327,9 @@ export default function Home() {
               skinStar={!!skinObj.star}
               wallColor={wallColor}
               bgColor={bgColor}
-              obstacleColor={obstacleColor}
+              hazardColor={hazardColor}
+              laserColor={laserColor}
+              hunterColor={hunterColor}
             />
             <AnimatePresence>
               {modal === "levelcomplete" && (

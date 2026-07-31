@@ -15,8 +15,12 @@ export default function CosmeticsScreen({
   setWallColor,
   bgColor,
   setBgColor,
-  obstacleColor,
-  setObstacleColor,
+  hazardColor,
+  setHazardColor,
+  laserColor,
+  setLaserColor,
+  hunterColor,
+  setHunterColor,
   starOwned,
   onBuyStar,
   buying,
@@ -106,8 +110,16 @@ export default function CosmeticsScreen({
           <ColorRow value={bgColor} onChange={setBgColor} presets={BG_PRESETS} />
         </Section>
 
-        <Section title="Obstacle Color" subtitle="Free — color every hazard, laser, and hunter.">
-          <ColorRow value={obstacleColor} onChange={setObstacleColor} presets={OBSTACLE_PRESETS} />
+        <Section title="Hazard Color" subtitle="Free — color the roaming red dots.">
+          <ColorRow value={hazardColor} onChange={setHazardColor} presets={OBSTACLE_PRESETS} />
+        </Section>
+
+        <Section title="Laser Color" subtitle="Free — color the sweeping beams.">
+          <ColorRow value={laserColor} onChange={setLaserColor} presets={OBSTACLE_PRESETS} />
+        </Section>
+
+        <Section title="Hunter Color" subtitle="Free — color the homing drones.">
+          <ColorRow value={hunterColor} onChange={setHunterColor} presets={OBSTACLE_PRESETS} />
         </Section>
       </div>
     </div>

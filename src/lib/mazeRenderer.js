@@ -69,7 +69,9 @@ export function renderGame(ctx, st) {
   } = st;
   const now = performance.now();
   const u = Math.min(w, h);
-  const oc = st.obstacleColor || "#FB7185";
+  const hc = st.hazardColor || "#FB7185";
+  const lc = st.laserColor || "#22D3EE";
+  const uc = st.hunterColor || "#A855F7";
 
   ctx.clearRect(0, 0, w, h);
   ctx.fillStyle = st.bgColor || "#0B0F1A";
@@ -116,8 +118,8 @@ export function renderGame(ctx, st) {
   for (const hz of hazards) {
     ctx.save();
     ctx.shadowBlur = 16;
-    ctx.shadowColor = oc;
-    ctx.fillStyle = oc;
+    ctx.shadowColor = hc;
+    ctx.fillStyle = hc;
     ctx.beginPath();
     ctx.arc(hz.x, hz.y, hz.r, 0, Math.PI * 2);
     ctx.fill();
@@ -130,8 +132,8 @@ export function renderGame(ctx, st) {
     if (l.phase === "fire") {
       ctx.save();
       ctx.shadowBlur = 14;
-      ctx.shadowColor = oc;
-      ctx.strokeStyle = oc;
+      ctx.shadowColor = lc;
+      ctx.strokeStyle = lc;
       ctx.lineWidth = Math.max(3, cs * 0.12);
       ctx.lineCap = "round";
       ctx.beginPath();
@@ -142,7 +144,7 @@ export function renderGame(ctx, st) {
     } else if (l.phase === "warn") {
       ctx.save();
       ctx.globalAlpha = 0.5;
-      ctx.strokeStyle = oc;
+      ctx.strokeStyle = lc;
       ctx.lineWidth = Math.max(2, cs * 0.08);
       ctx.setLineDash([cs * 0.14, cs * 0.14]);
       ctx.beginPath();
@@ -154,7 +156,7 @@ export function renderGame(ctx, st) {
     // emitter marker
     ctx.save();
     ctx.globalAlpha = l.phase === "fire" ? 1 : 0.7;
-    ctx.fillStyle = oc;
+    ctx.fillStyle = lc;
     ctx.beginPath();
     ctx.arc(seg.ax, seg.ay, Math.max(2, cs * 0.08), 0, Math.PI * 2);
     ctx.fill();
@@ -166,15 +168,15 @@ export function renderGame(ctx, st) {
   for (const hu of hunters) {
     ctx.save();
     ctx.shadowBlur = 16;
-    ctx.shadowColor = oc;
-    ctx.fillStyle = oc;
+    ctx.shadowColor = uc;
+    ctx.fillStyle = uc;
     ctx.beginPath();
     ctx.arc(hu.x, hu.y, hu.r, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
     ctx.save();
     ctx.globalAlpha = 0.35 + 0.4 * hpulse;
-    ctx.strokeStyle = oc;
+    ctx.strokeStyle = uc;
     ctx.lineWidth = Math.max(1.5, cs * 0.04);
     ctx.beginPath();
     ctx.arc(hu.x, hu.y, hu.r + cs * 0.12 + cs * 0.05 * hpulse, 0, Math.PI * 2);
