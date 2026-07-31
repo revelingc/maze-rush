@@ -1,4 +1,9 @@
-// Goofy name generator + lightweight profanity filter for the leaderboard name prompt.
+// Goofy name generator + profanity filter for the leaderboard name prompt.
+// Combines the `leo-profanity` dictionary (word-boundary aware) with a
+// leetspeak-normalized substring check against a curated root blocklist, so
+// common bypasses like "sh1t", "f@ck", "f.u.c.k", "biitch" are still caught.
+
+import leoProfanity from "leo-profanity";
 
 const ADJ = [
   "Sneaky", "Brave", "Zesty", "Wobbly", "Cosmic", "Dizzy", "Fuzzy",
@@ -72,10 +77,19 @@ function normalize(text) {
     .replace(/[^a-z0-9]/g, "");
 }
 
+// Seed the library's dictionary with our curated roots so both the
+// word-boundary check and the leetspeak substring check share one list.
+leoProfanity.add(BAD_WORDS);
+
 export function containsProfanity(text) {
-  const t = normalize(text);
+  const raw = (text || "").trim();
+  if (!raw) return false;
+  // 1. Library dictionary check on the raw input (word-boundary aware).
+  if (leoProfanity.check(raw)) return true;
+  // 2. Leetspeak-normalized substring check against curated roots, catching
+  //    obfuscated bypasses that collapse into a known bad word.
+  const t = normalize(raw);
   if (!t) return false;
-  // Collapse repeated characters to catch "fuuuuck", "shiiit", "biitch".
   const collapsed = t.replace(/(.)\1+/g, "$1");
   return BAD_WORDS.some((w) => t.includes(w) || collapsed.includes(w));
 }
