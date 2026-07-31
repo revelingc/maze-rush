@@ -27,6 +27,7 @@ export default function Home() {
   const [skin, setSkin] = useState(initial.skin || "default");
   const [wallColor, setWallColor] = useState(initial.wallColor || "#39496B");
   const [bgColor, setBgColor] = useState(initial.bgColor || "#0B0F1A");
+  const [starOwned, setStarOwned] = useState(!!initial.starOwned);
   const [running, setRunning] = useState(true);
   const [resetToken, setResetToken] = useState(0);
   const [modal, setModal] = useState(null);
@@ -50,8 +51,8 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    saveState({ level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor });
-  }, [level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor]);
+    saveState({ level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned });
+  }, [level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned]);
 
   useEffect(() => {
     if (level > bestLevel) setBestLevel(level);
@@ -190,6 +191,10 @@ export default function Home() {
     setAd(null);
   };
 
+  const handleBuyStar = () => {
+    // Checkout wired after payments installation.
+  };
+
   const skinObj = getSkin(skin);
   const cfg = getLevelConfig(level);
 
@@ -223,6 +228,8 @@ export default function Home() {
         setWallColor={setWallColor}
         bgColor={bgColor}
         setBgColor={setBgColor}
+        starOwned={starOwned}
+        onBuyStar={handleBuyStar}
         onBack={() => setScreen("menu")}
       />
     );

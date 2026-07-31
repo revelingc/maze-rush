@@ -167,7 +167,7 @@ function updateCamera(st) {
 
 function updateGame(st, dt, pointer, deadRef, cbRef) {
   const { ball, cs, maze, hazards, cfg } = st;
-  const maxSpeed = cs * 16;
+  const maxSpeed = cs * 11;
   const maxR = (pointer && pointer.current.maxR) || 70;
 
   // joystick -> velocity
@@ -175,7 +175,7 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
     const dx = pointer.current.x - pointer.current.ax;
     const dy = pointer.current.y - pointer.current.ay;
     const mag = Math.hypot(dx, dy);
-    if (mag > 6) {
+    if (mag > 8) {
       st.moved = true;
       const clamped = Math.min(mag, maxR);
       const speed = (clamped / maxR) * maxSpeed;

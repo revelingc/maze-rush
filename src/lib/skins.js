@@ -11,7 +11,7 @@ export const DOT_SKINS = [
   { id: "lime", name: "Lime", unlockLevel: 70, color: "#A3E635" },
   { id: "orange", name: "Orange", unlockLevel: 80, color: "#FB923C" },
   { id: "indigo", name: "Indigo", unlockLevel: 90, color: "#818CF8" },
-  { id: "star", name: "Shooting Star", unlockLevel: 100, color: "#FDE68A", star: true },
+  { id: "star", name: "Shooting Star", unlockLevel: Infinity, color: "#FDE68A", star: true, price: 1.99 },
 ];
 
 export const getSkin = (id) => DOT_SKINS.find((s) => s.id === id) || DOT_SKINS[0];

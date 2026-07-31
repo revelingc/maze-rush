@@ -14,6 +14,8 @@ export default function CosmeticsScreen({
   setWallColor,
   bgColor,
   setBgColor,
+  starOwned,
+  onBuyStar,
   onBack,
 }) {
   return (
@@ -35,38 +37,57 @@ export default function CosmeticsScreen({
         <Section title="Ball Skin" subtitle="Unlock a new look every 10 levels.">
           <div className="grid grid-cols-3 gap-3">
             {DOT_SKINS.map((s) => {
-              const unlocked = isSkinUnlocked(s, bestLevel);
+              const isStar = s.id === "star";
+              const owned = isStar ? !!starOwned : isSkinUnlocked(s, bestLevel);
               const selected = s.id === skin;
+              const label = isStar
+                ? starOwned
+                  ? "Owned"
+                  : `$${s.price.toFixed(2)}`
+                : s.unlockLevel === 0
+                ? "Free"
+                : owned
+                ? "Unlocked"
+                : `Lv ${s.unlockLevel}`;
               return (
-                <button
+                <div
                   key={s.id}
-                  disabled={!unlocked}
-                  onClick={() => setSkin(s.id)}
                   className={
                     "relative flex flex-col items-center gap-2 rounded-2xl p-3 ring-1 transition " +
                     (selected
                       ? "bg-teal-400/15 ring-teal-300/50"
-                      : unlocked
-                      ? "bg-white/5 ring-white/10 hover:bg-white/10"
-                      : "bg-white/5 ring-white/5 opacity-60")
+                      : "bg-white/5 ring-white/10")
                   }
                 >
                   <DotPreview skin={s} size={30} />
                   <span className="text-xs font-medium">{s.name}</span>
-                  <span className="text-[10px] text-white/40">
-                    {s.unlockLevel === 0 ? "Free" : unlocked ? "Unlocked" : `Lv ${s.unlockLevel}`}
-                  </span>
+                  {isStar && !starOwned ? (
+                    <button
+                      onClick={onBuyStar}
+                      className="rounded-full bg-amber-400 px-3 py-1 text-[11px] font-semibold text-amber-950 hover:bg-amber-300"
+                    >
+                      Buy {label}
+                    </button>
+                  ) : (
+                    <button
+                      disabled={!owned}
+                      onClick={() => setSkin(s.id)}
+                      className="text-[10px] text-white/50 hover:text-white disabled:cursor-not-allowed disabled:text-white/30"
+                    >
+                      {selected ? "Selected" : label}
+                    </button>
+                  )}
                   {selected && (
                     <span className="absolute right-2 top-2 text-teal-300">
                       <Check className="h-3.5 w-3.5" />
                     </span>
                   )}
-                  {!unlocked && (
+                  {!owned && !isStar && (
                     <span className="absolute right-2 top-2 text-white/40">
                       <Lock className="h-3.5 w-3.5" />
                     </span>
                   )}
-                </button>
+                </div>
               );
             })}
           </div>
