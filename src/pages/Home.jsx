@@ -28,6 +28,7 @@ export default function Home() {
   const [wallColor, setWallColor] = useState(initial.wallColor || "#39496B");
   const [bgColor, setBgColor] = useState(initial.bgColor || "#0B0F1A");
   const [starOwned, setStarOwned] = useState(!!initial.starOwned);
+  const [buying, setBuying] = useState(false);
   const [running, setRunning] = useState(true);
   const [resetToken, setResetToken] = useState(0);
   const [modal, setModal] = useState(null);
@@ -47,6 +48,7 @@ export default function Home() {
       setMyId(me.id);
       const name = me.full_name || (me.email || "").split("@")[0] || "";
       setMyName(name);
+      if (me.star_skin_owned) setStarOwned(true);
     }).catch(() => {});
   }, []);
 
@@ -191,8 +193,23 @@ export default function Home() {
     setAd(null);
   };
 
-  const handleBuyStar = () => {
-    // Checkout wired after payments installation.
+  const handleBuyStar = async () => {
+    if (buying) return;
+    setBuying(true);
+    try {
+      const res = await base44.functions.invoke("create-checkout", { productId: "star_skin" });
+      const redirectUrl = res?.data?.redirectUrl;
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else {
+        alert("Could not start checkout. Please try again.");
+      }
+    } catch (e) {
+      console.error("create-checkout failed", e);
+      alert("Could not start checkout. Please try again.");
+    } finally {
+      setBuying(false);
+    }
   };
 
   const skinObj = getSkin(skin);
@@ -230,6 +247,7 @@ export default function Home() {
         setBgColor={setBgColor}
         starOwned={starOwned}
         onBuyStar={handleBuyStar}
+        buying={buying}
         onBack={() => setScreen("menu")}
       />
     );

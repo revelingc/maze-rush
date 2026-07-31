@@ -7,6 +7,11 @@
         "admin",
         "user"
       ]
+    },
+    "star_skin_owned": {
+      "type": "boolean",
+      "description": "Whether the user owns the Shooting Star ball skin cosmetic (granted by the payments webhook)",
+      "default": false
     }
   },
   "required": [
