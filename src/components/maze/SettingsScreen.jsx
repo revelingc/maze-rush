@@ -1,9 +1,23 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Vibrate, Eye, Cloud, Check, Smartphone, LogOut } from "lucide-react";
+import { ArrowLeft, Vibrate, Eye, Cloud, Check, Smartphone, LogOut, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { signIn as nativeSignIn, signOut as nativeSignOut, detectPlatform } from "@/lib/nativeAccount";
+import { useAuth } from "@/lib/AuthContext";
+import { base44 } from "@/api/base44Client";
+import { clearAllData } from "@/lib/gameStorage";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function SettingsScreen({ settings, setSettings, onAccount, onBack }) {
   const [connecting, setConnecting] = useState(false);
@@ -11,6 +25,9 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
   const platform = detectPlatform();
   const providerLabel = platform === "ios" ? "Apple / iCloud" : "Google / Android";
   const account = settings.account;
+  const { isAuthenticated } = useAuth();
+  const showDelete = isAuthenticated || !!account;
+  const [deleting, setDeleting] = useState(false);
 
   const update = (patch) => setSettings((s) => ({ ...s, ...patch }));
 
@@ -41,9 +58,24 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
     setMsg(null);
   };
 
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      clearAllData();
+      await nativeSignOut();
+      onAccount(null);
+    } finally {
+      if (isAuthenticated) {
+        base44.auth.logout("/");
+      } else {
+        window.location.href = "/";
+      }
+    }
+  };
+
   return (
     <div className="relative flex h-[100dvh] flex-col bg-neutral-100 px-6 text-slate-900">
-      <header className="flex items-center gap-3 pt-6 pb-4">
+      <header className="flex items-center gap-3 safe-pt-6 pb-4">
         <button
           onClick={onBack}
           className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
@@ -53,7 +85,7 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
         <h1 className="text-lg font-semibold">Settings</h1>
       </header>
 
-      <div className="flex-1 overflow-y-auto pb-8">
+      <div className="flex-1 overflow-y-auto safe-pb-8">
         {/* Haptics */}
         <Section icon={<Vibrate className="h-4 w-4 text-rose-500" />} title="Haptics" subtitle="Vibration on death">
           <Row label="Haptic feedback">
@@ -151,6 +183,49 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
             </div>
           )}
         </Section>
+
+        {/* Danger zone — account deletion (authenticated users only) */}
+        {showDelete && (
+          <Section
+            icon={<Trash2 className="h-4 w-4 text-rose-500" />}
+            title="Danger zone"
+            subtitle="Permanently remove your account"
+          >
+            <div className="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+              <p className="text-xs text-slate-500">
+                Clears your local progress, scores, and settings, and signs you out. This can't be undone.
+              </p>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    type="button"
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-rose-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-rose-400"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Delete account
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete account?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This permanently clears your local progress, scores, and settings and signs you out. This action can't be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteAccount}
+                      disabled={deleting}
+                      className="bg-rose-500 text-white hover:bg-rose-400"
+                    >
+                      {deleting ? "Deleting…" : "Delete"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </Section>
+        )}
       </div>
     </div>
   );

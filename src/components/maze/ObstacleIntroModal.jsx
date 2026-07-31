@@ -48,7 +48,7 @@ export default function ObstacleIntroModal({ obstacleKey, onContinue }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 z-50 flex items-center justify-center rounded-2xl bg-slate-950/85 p-5 backdrop-blur-md"
+      className="absolute inset-0 z-50 flex items-center justify-center rounded-2xl bg-slate-950/85 px-5 safe-modal-5 backdrop-blur-md"
     >
       <motion.div
         initial={{ y: 14, scale: 0.97 }}

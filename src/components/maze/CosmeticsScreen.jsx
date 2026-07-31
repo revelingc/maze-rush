@@ -33,7 +33,7 @@ export default function CosmeticsScreen({
 }) {
   return (
     <div className="flex h-[100dvh] flex-col bg-slate-950 text-white">
-      <header className="flex items-center gap-3 px-5 pt-5">
+      <header className="flex items-center gap-3 px-5 safe-pt-5">
         <button
           onClick={onBack}
           className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10 hover:bg-white/10"
@@ -46,7 +46,7 @@ export default function CosmeticsScreen({
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-5 pb-6">
+      <div className="flex-1 overflow-y-auto px-5 safe-pb-6">
         <Section title="Dot Color" subtitle="Unlock a new look every 5 levels.">
           <div className="grid grid-cols-3 gap-3">
             {DOT_SKINS.map((s) => {

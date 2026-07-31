@@ -29,7 +29,7 @@ export default function AdOverlay({ type, onComplete }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 z-50 flex items-center justify-center rounded-2xl bg-black/90 p-6 backdrop-blur-sm"
+      className="absolute inset-0 z-50 flex items-center justify-center rounded-2xl bg-black/90 px-6 safe-modal-6 backdrop-blur-sm"
     >
       <div className="flex w-full max-w-sm flex-col items-center text-center">
         <div className="mb-4 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-white/40">

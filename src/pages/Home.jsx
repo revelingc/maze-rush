@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Heart, Zap, Gauge, Flame, Trophy, BarChart3, Home as HomeIcon } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import MazeCanvas from "@/components/maze/MazeCanvas";
 import AdOverlay from "@/components/maze/AdOverlay";
 import GameOverModal from "@/components/maze/GameOverModal";
@@ -23,7 +24,9 @@ import SettingsScreen from "@/components/maze/SettingsScreen";
 
 export default function Home() {
   const initial = loadState();
-  const [screen, setScreen] = useState("menu"); // 'menu' | 'play' | 'cosmetics'
+  const location = useLocation();
+  const navigate = useNavigate();
+  const screen = location.pathname;
   const [level, setLevel] = useState(initial.level);
   const [lives, setLives] = useState(initial.lives);
   const [streak, setStreak] = useState(initial.streak);
@@ -76,7 +79,7 @@ export default function Home() {
 
   // Show a one-time intro overlay when entering a level that debuts an obstacle.
   useEffect(() => {
-    if (screen !== "play") return;
+    if (screen !== "/play") return;
     const key = INTRO_LEVELS[level];
     if (key && !seenIntros.includes(key)) {
       setIntro(key);
@@ -204,14 +207,14 @@ export default function Home() {
     }
     setModal(null);
     setAd(null);
-    setScreen("play");
+    navigate("/play");
     setRunning(true);
     setResetToken((t) => t + 1);
   };
 
   const goHome = () => {
     setRunning(false);
-    setScreen("menu");
+    navigate("/");
     setModal(null);
     setAd(null);
   };
@@ -280,7 +283,7 @@ export default function Home() {
   const effHunter = cb ? "#D55E00" : hunterColor;
   const trailCfg = trail ? getTrail(trail) : null;
 
-  if (screen === "menu") {
+  if (screen === "/") {
     return (
       <div className="relative">
         <MainMenu
@@ -288,10 +291,10 @@ export default function Home() {
           bestStreak={bestStreak}
           skinObj={skinObj}
           onPlay={startPlay}
-          onCosmetics={() => setScreen("cosmetics")}
+          onCosmetics={() => navigate("/cosmetics")}
           onBoard={() => setShowBoard(true)}
-          onStats={() => setScreen("stats")}
-          onSettings={() => setScreen("settings")}
+          onStats={() => navigate("/stats")}
+          onSettings={() => navigate("/settings")}
           adFree={adFree}
           onBuyAdFree={handleBuyAdFree}
         />
@@ -304,7 +307,7 @@ export default function Home() {
     );
   }
 
-  if (screen === "cosmetics") {
+  if (screen === "/cosmetics") {
     return (
       <CosmeticsScreen
         bestLevel={bestLevel}
@@ -327,30 +330,30 @@ export default function Home() {
         trailsOwned={trailsOwned}
         onBuyTrail={handleBuyTrail}
         buying={buying}
-        onBack={() => setScreen("menu")}
+        onBack={() => navigate(-1)}
       />
     );
   }
 
-  if (screen === "settings") {
+  if (screen === "/settings") {
     return (
       <SettingsScreen
         settings={settings}
         setSettings={setSettings}
         onAccount={handleAccount}
-        onBack={() => setScreen("menu")}
+        onBack={() => navigate(-1)}
       />
     );
   }
 
-  if (screen === "stats") {
+  if (screen === "/stats") {
     return (
       <StatsScreen
         bestLevel={bestLevel}
         bestStreak={bestStreak}
         bestTimes={bestTimes}
         onShare={handleShare}
-        onBack={() => setScreen("menu")}
+        onBack={() => navigate(-1)}
       />
     );
   }
@@ -366,7 +369,7 @@ export default function Home() {
         onOpenBoard={() => setShowBoard(true)}
       />
 
-      <main className="flex flex-1 flex-col px-4 pb-4 pt-2">
+      <main className="flex flex-1 flex-col px-4 pt-2 safe-pb-4">
         <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col gap-2">
           <p className="text-center text-xs text-white/40">
             Drag the pad below to steer — reach the glowing exit before time runs out.
@@ -447,7 +450,7 @@ export default function Home() {
 
 function Header({ level, lives, streak, bestStreak, difficultyPct, onOpenBoard }) {
   return (
-    <header className="px-5 pt-5">
+    <header className="px-5 safe-pt-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400/20 to-indigo-500/20 ring-1 ring-white/10">

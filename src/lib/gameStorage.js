@@ -135,3 +135,10 @@ export function saveSettings(s) {
     /* ignore */
   }
 }
+
+// Clears all locally-stored game data (used by account deletion).
+export function clearAllData() {
+  [KEY, SCORES_KEY, TIMES_KEY, SETTINGS_KEY].forEach((k) => {
+    try { localStorage.removeItem(k); } catch (e) { /* ignore */ }
+  });
+}

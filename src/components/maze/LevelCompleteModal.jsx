@@ -62,7 +62,7 @@ function Backdrop({ children }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 z-40 flex items-center justify-center rounded-2xl bg-slate-950/70 p-6 backdrop-blur-md"
+      className="absolute inset-0 z-40 flex items-center justify-center rounded-2xl bg-slate-950/70 px-6 safe-modal-6 backdrop-blur-md"
     >
       <motion.div
         initial={{ y: 12, scale: 0.97 }}

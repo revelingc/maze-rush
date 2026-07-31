@@ -6,7 +6,7 @@ import DotPreview from "@/components/maze/DotPreview";
 export default function MainMenu({ bestLevel, bestStreak, skinObj, onPlay, onCosmetics, onBoard, onStats, onSettings, adFree, onBuyAdFree }) {
   const [confirmAdFree, setConfirmAdFree] = useState(false);
   return (
-    <div className="relative flex h-[100dvh] flex-col bg-slate-950 px-6 text-white">
+    <div className="relative flex h-[100dvh] flex-col bg-slate-950 px-6 text-white safe-pt safe-pb">
       <div className="flex flex-1 flex-col items-center justify-center gap-7">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -68,7 +68,7 @@ export default function MainMenu({ bestLevel, bestStreak, skinObj, onPlay, onCos
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-6 backdrop-blur-md"
+            className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-6 safe-modal-6 backdrop-blur-md"
           >
             <motion.div
               initial={{ y: 12, scale: 0.97 }}
