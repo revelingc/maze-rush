@@ -5,6 +5,7 @@ import DotPreview from "@/components/maze/DotPreview";
 
 const WALL_PRESETS = ["#39496B", "#475569", "#7C3AED", "#DB2777", "#0EA5E9", "#F59E0B", "#10B981", "#F8FAFC"];
 const BG_PRESETS = ["#0B0F1A", "#000000", "#0F172A", "#1E1B4B", "#3B0764", "#7F1D1D", "#082F49", "#1F2937"];
+const OBSTACLE_PRESETS = ["#FB7185", "#22D3EE", "#A855F7", "#F59E0B", "#34D399", "#EF4444", "#3B82F6", "#EC4899"];
 
 export default function CosmeticsScreen({
   bestLevel,
@@ -14,6 +15,8 @@ export default function CosmeticsScreen({
   setWallColor,
   bgColor,
   setBgColor,
+  obstacleColor,
+  setObstacleColor,
   starOwned,
   onBuyStar,
   buying,
@@ -35,7 +38,7 @@ export default function CosmeticsScreen({
       </header>
 
       <div className="flex-1 overflow-y-auto px-5 pb-6">
-        <Section title="Ball Skin" subtitle="Unlock a new look every 10 levels.">
+        <Section title="Dot Color" subtitle="Unlock a new look every 5 levels.">
           <div className="grid grid-cols-3 gap-3">
             {DOT_SKINS.map((s) => {
               const isStar = s.id === "star";
@@ -101,6 +104,10 @@ export default function CosmeticsScreen({
 
         <Section title="Background" subtitle="Free — pick any color.">
           <ColorRow value={bgColor} onChange={setBgColor} presets={BG_PRESETS} />
+        </Section>
+
+        <Section title="Obstacle Color" subtitle="Free — color every hazard, laser, and hunter.">
+          <ColorRow value={obstacleColor} onChange={setObstacleColor} presets={OBSTACLE_PRESETS} />
         </Section>
       </div>
     </div>

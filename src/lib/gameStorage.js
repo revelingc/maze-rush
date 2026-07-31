@@ -16,6 +16,7 @@ export function loadState() {
         skin: str(p.skin, "default"),
         wallColor: str(p.wallColor, "#39496B"),
         bgColor: str(p.bgColor, "#0B0F1A"),
+        obstacleColor: str(p.obstacleColor, "#FB7185"),
         starOwned: !!p.starOwned,
         seenIntros: Array.isArray(p.seenIntros) ? p.seenIntros : [],
         displayName: str(p.displayName, null),
@@ -27,7 +28,7 @@ export function loadState() {
   }
   return {
     level: 1, lives: 3, streak: 0, bestStreak: 0, bestLevel: 1,
-    skin: "default", wallColor: "#39496B", bgColor: "#0B0F1A",
+    skin: "default", wallColor: "#39496B", bgColor: "#0B0F1A", obstacleColor: "#FB7185",
     starOwned: false, seenIntros: [],
     displayName: null,
     adFree: false,

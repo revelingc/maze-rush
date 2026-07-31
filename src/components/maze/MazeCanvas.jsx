@@ -21,7 +21,7 @@ const VISIBLE_CELLS = 7; // cells shown across the viewport width
  *  - pointer: shared ref { active, ax, ay, x, y, maxR }
  *  - level, running, resetToken, onLevelComplete, onLifeLost
  */
-export default function MazeCanvas({ level, running, resetToken, onLevelComplete, onLifeLost, pointer, skinColor, skinStar, wallColor, bgColor }) {
+export default function MazeCanvas({ level, running, resetToken, onLevelComplete, onLifeLost, pointer, skinColor, skinStar, wallColor, bgColor, obstacleColor }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const stateRef = useRef(null);
@@ -149,6 +149,7 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       skinStar: !!skinStar,
       wallColor: wallColor || "#39496B",
       bgColor: bgColor || "#0B0F1A",
+      obstacleColor: obstacleColor || "#FB7185",
     };
 
     deadRef.current = false;
