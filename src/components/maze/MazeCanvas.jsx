@@ -287,12 +287,14 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
     ball.vy *= 0.8;
   }
 
-  // timer
-  st.timer -= dt;
-  if (st.timer <= 0) {
-    st.timer = cfg.timer;
-    killPlayer(st, pointer, deadRef, cbRef);
-    return;
+  // timer — only counts down once the player has started moving
+  if (st.moved) {
+    st.timer -= dt;
+    if (st.timer <= 0) {
+      st.timer = cfg.timer;
+      killPlayer(st, pointer, deadRef, cbRef);
+      return;
+    }
   }
 
   // substepped movement + collision (prevents tunneling at high speed)
