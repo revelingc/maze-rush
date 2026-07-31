@@ -1,8 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Trophy, ChevronRight } from "lucide-react";
+import { Trophy, ChevronRight, Clock } from "lucide-react";
 
-export default function LevelCompleteModal({ level, onNext }) {
+export default function LevelCompleteModal({ level, time, isRecord, onNext }) {
   return (
     <Backdrop>
       <div className="text-center">
@@ -16,6 +16,21 @@ export default function LevelCompleteModal({ level, onNext }) {
         <p className="mt-3 text-sm text-white/50">
           The maze grows 5% harder. Keep your streak alive.
         </p>
+
+        <div className="mt-4 flex items-center justify-center gap-2">
+          <div className="flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 ring-1 ring-white/10">
+            <Clock className="h-3.5 w-3.5 text-sky-300" />
+            <span className="text-sm font-semibold tabular-nums text-white">
+              {time != null && Number.isFinite(time) ? `${time.toFixed(1)}s` : "—"}
+            </span>
+          </div>
+          {isRecord && (
+            <span className="rounded-full bg-amber-400/20 px-3 py-1.5 text-xs font-semibold text-amber-300 ring-1 ring-amber-300/30">
+              New best!
+            </span>
+          )}
+        </div>
+
         <button
           onClick={onNext}
           className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-400 px-6 py-3.5 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-300 active:scale-[0.98]"

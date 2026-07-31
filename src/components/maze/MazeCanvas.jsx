@@ -312,6 +312,6 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
 
   if (Math.hypot(ball.x - st.exitX, ball.y - st.exitY) < cs * 0.4) {
     deadRef.current = true;
-    cbRef.current.onLevelComplete();
+    cbRef.current.onLevelComplete(st.timerMax - st.timer);
   }
 }

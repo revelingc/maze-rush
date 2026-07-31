@@ -72,3 +72,31 @@ export function addHighScore(entry) {
     /* ignore */
   }
 }
+
+const TIMES_KEY = "mazerush_besttimes_v1";
+
+export function loadBestTimes() {
+  try {
+    const raw = localStorage.getItem(TIMES_KEY);
+    const obj = raw ? JSON.parse(raw) : {};
+    return obj && typeof obj === "object" ? obj : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+// Records the fastest clear time for a level. Returns true when it's a new best.
+export function setBestTime(level, seconds) {
+  try {
+    const obj = loadBestTimes();
+    const prev = obj[level];
+    if (prev == null || seconds < prev) {
+      obj[level] = seconds;
+      localStorage.setItem(TIMES_KEY, JSON.stringify(obj));
+      return true;
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
+}

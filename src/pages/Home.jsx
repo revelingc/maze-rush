@@ -11,11 +11,13 @@ import ControlPad from "@/components/maze/ControlPad";
 import MainMenu from "@/components/maze/MainMenu";
 import CosmeticsScreen from "@/components/maze/CosmeticsScreen";
 import ObstacleIntroModal from "@/components/maze/ObstacleIntroModal";
-import { loadState, saveState, loadHighScores, addHighScore } from "@/lib/gameStorage";
+import { loadState, saveState, loadHighScores, addHighScore, loadBestTimes, setBestTime } from "@/lib/gameStorage";
 import { purchaseProduct } from "@/lib/nativePurchase";
+import { shareResult } from "@/lib/shareUtils";
 import { getLevelConfig, INTRO_LEVELS } from "@/lib/mazeGenerator";
 import { generateGoofyName } from "@/lib/nameUtils";
 import { getSkin } from "@/lib/skins";
+import StatsScreen from "@/components/maze/StatsScreen";
 
 export default function Home() {
   const initial = loadState();
@@ -43,6 +45,8 @@ export default function Home() {
   const [displayName, setDisplayName] = useState(initial.displayName || null);
   const [pendingScore, setPendingScore] = useState(null);
   const [buying, setBuying] = useState(false);
+  const [bestTimes, setBestTimes] = useState(() => loadBestTimes());
+  const [lastTime, setLastTime] = useState(null);
 
   const livesRef = useRef(lives);
   livesRef.current = lives;
@@ -96,14 +100,19 @@ export default function Home() {
     }
   }, [level, streak, displayName, checkQualifies, submitScore]);
 
-  const handleLevelComplete = useCallback(() => {
+  const handleLevelComplete = useCallback((elapsed) => {
     setRunning(false);
     setStreak((s) => s + 1);
     setBestStreak((b) => Math.max(b, streak + 1));
+    const secs = Math.max(0, elapsed || 0);
+    const isRecord = setBestTime(level, secs);
+    setLastTime({ secs, isRecord });
+    setBestTimes(loadBestTimes());
     setModal("levelcomplete");
-  }, [streak]);
+  }, [streak, level]);
 
   const handleLifeLost = useCallback(() => {
+    if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(30);
     if (adFreeRef.current) {
       // Ad-free players always have six lives — just retry the level.
       setResetToken((t) => t + 1);
@@ -216,6 +225,10 @@ export default function Home() {
     }
   };
 
+  const handleShare = useCallback(async () => {
+    await shareResult({ level, streak, bestStreak });
+  }, [level, streak, bestStreak]);
+
   const skinObj = getSkin(skin);
   const cfg = getLevelConfig(level);
 
@@ -229,6 +242,7 @@ export default function Home() {
           onPlay={startPlay}
           onCosmetics={() => setScreen("cosmetics")}
           onBoard={() => setShowBoard(true)}
+          onStats={() => setScreen("stats")}
           adFree={adFree}
           onBuyAdFree={handleBuyAdFree}
         />
@@ -260,6 +274,18 @@ export default function Home() {
         starOwned={starOwned}
         onBuyStar={handleBuyStar}
         buying={buying}
+        onBack={() => setScreen("menu")}
+      />
+    );
+  }
+
+  if (screen === "stats") {
+    return (
+      <StatsScreen
+        bestLevel={bestLevel}
+        bestStreak={bestStreak}
+        bestTimes={bestTimes}
+        onShare={handleShare}
         onBack={() => setScreen("menu")}
       />
     );
@@ -299,7 +325,12 @@ export default function Home() {
             />
             <AnimatePresence>
               {modal === "levelcomplete" && (
-                <LevelCompleteModal level={level} onNext={nextLevel} />
+                <LevelCompleteModal
+                  level={level}
+                  time={lastTime?.secs}
+                  isRecord={!!lastTime?.isRecord}
+                  onNext={nextLevel}
+                />
               )}
               {modal === "nameprompt" && (
                 <NamePromptModal
@@ -310,7 +341,13 @@ export default function Home() {
                 />
               )}
               {modal === "gameover" && (
-                <GameOverModal level={level} onWatchAd={watchAd} onRestart={restart} />
+                <GameOverModal
+                  level={level}
+                  streak={streak}
+                  onWatchAd={watchAd}
+                  onRestart={restart}
+                  onShare={handleShare}
+                />
               )}
               {ad && <AdOverlay type={ad} onComplete={onAdComplete} />}
               {intro && (
