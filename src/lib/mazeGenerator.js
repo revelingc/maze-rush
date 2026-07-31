@@ -97,12 +97,12 @@ function ensureEndpointsOpen(grid, cols, rows, idx) {
 
 /**
  * Returns the difficulty configuration for a given level.
- * Difficulty grows ~5% per level (compound). Mazes are larger now and
+ * Difficulty grows ~2% per level (compound). Mazes are larger now and
  * scroll beneath the runner, so timers are a bit more generous.
  */
 export function getLevelConfig(level, cycle = 1) {
   const cycleMult = Math.pow(1.5, cycle - 1); // +50% base per completed 100-level run
-  const d = Math.pow(1.05, level - 1) * cycleMult; // 5% harder each level, cycle-scaled
+  const d = Math.pow(1.02, level - 1) * cycleMult; // 2% harder each level, cycle-scaled
   const size = Math.min(40, 10 + Math.round((level - 1) * 1.1));
   const hazards = level >= 3 ? Math.min(12, Math.floor((level - 1) / 1.3)) : 0;
   const hazardSpeed = Math.min(240, 80 * d);
