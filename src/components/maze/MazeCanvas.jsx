@@ -65,7 +65,9 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       } while ((used.has(key) || (cx <= 2 && cy <= 2)) && tries < 80);
       used.add(key);
       const cell = maze.grid[key];
-      const valid = [0, 1, 2, 3].filter((dd) => !cell.walls[dd]);
+      const valid = [0, 1, 2, 3].filter(
+        (dd) => !cell.walls[dd] && !((cx + [0, 1, 0, -1][dd]) === 0 && (cy + [-1, 0, 1, 0][dd]) === 0)
+      );
       const dir = valid.length ? valid[Math.floor(Math.random() * valid.length)] : -1;
       hazards.push({
         cellX: cx,
@@ -84,7 +86,7 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       maze, cs, ball, hazards,
       exitX: (cfg.cols - 1) * cs + cs / 2,
       exitY: (cfg.rows - 1) * cs + cs / 2,
-      timer: cfg.timer, timerMax: cfg.timer, invuln: 1.0,
+      timer: cfg.timer, timerMax: cfg.timer, invuln: 1.0, moved: false,
       cfg, size, ctx, worldW, worldH, camX: 0, camY: 0,
     };
 
@@ -198,6 +200,7 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
     const dy = pointer.current.y - pointer.current.ay;
     const mag = Math.hypot(dx, dy);
     if (mag > 6) {
+      st.moved = true;
       const clamped = Math.min(mag, maxR);
       const speed = (clamped / maxR) * maxSpeed;
       ball.vx = (dx / mag) * speed;
@@ -243,7 +246,7 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
 
   if (st.invuln > 0) st.invuln -= dt;
 
-  if (st.invuln <= 0) {
+  if (st.invuln <= 0 && st.moved) {
     for (const h of hazards) {
       if (Math.hypot(h.x - ball.x, h.y - ball.y) < h.r + ball.r) {
         st.invuln = 1.5;

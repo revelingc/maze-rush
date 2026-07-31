@@ -7,8 +7,10 @@ import AdOverlay from "@/components/maze/AdOverlay";
 import GameOverModal from "@/components/maze/GameOverModal";
 import LevelCompleteModal from "@/components/maze/LevelCompleteModal";
 import LeaderboardModal from "@/components/maze/LeaderboardModal";
+import NamePromptModal from "@/components/maze/NamePromptModal";
 import { loadState, saveState } from "@/lib/gameStorage";
 import { getLevelConfig } from "@/lib/mazeGenerator";
+import { generateGoofyName } from "@/lib/nameUtils";
 
 export default function Home() {
   const initial = loadState();
@@ -18,20 +20,21 @@ export default function Home() {
   const [bestStreak, setBestStreak] = useState(initial.bestStreak);
   const [running, setRunning] = useState(true);
   const [resetToken, setResetToken] = useState(0);
-  const [modal, setModal] = useState(null); // 'levelcomplete' | 'gameover'
+  const [modal, setModal] = useState(null); // 'levelcomplete' | 'gameover' | 'nameprompt'
   const [ad, setAd] = useState(null); // 'standard' | 'premium'
   const [showBoard, setShowBoard] = useState(false);
   const [myId, setMyId] = useState(null);
-  const [myName, setMyName] = useState("Runner");
+  const [myName, setMyName] = useState("");
+  const [displayName, setDisplayName] = useState(null); // chosen leaderboard name
+  const [pendingScore, setPendingScore] = useState(null); // { level, streak }
 
   const livesRef = useRef(lives);
   livesRef.current = lives;
 
-  // load the current user once
   useEffect(() => {
     base44.auth.me().then((me) => {
       setMyId(me.id);
-      const name = me.full_name || (me.email || "").split("@")[0] || "Runner";
+      const name = me.full_name || (me.email || "").split("@")[0] || "";
       setMyName(name);
     }).catch(() => {});
   }, []);
@@ -40,35 +43,56 @@ export default function Home() {
     saveState({ level, lives, streak, bestStreak });
   }, [level, lives, streak, bestStreak]);
 
-  const submitScore = useCallback(
-    async (reachedLevel, streakVal) => {
-      try {
-        const existing = await base44.entities.Score.filter(
-          { created_by_id: myId },
-          "-level",
-          1
-        );
-        if (existing.length) {
-          const s = existing[0];
-          if (reachedLevel > s.level || (reachedLevel === s.level && streakVal > s.streak)) {
-            await base44.entities.Score.update(s.id, {
-              level: reachedLevel,
-              streak: streakVal,
-            });
-          }
-        } else {
-          await base44.entities.Score.create({
-            player_name: myName,
+  const checkQualifies = useCallback(async (reachedLevel, streakVal) => {
+    try {
+      const existing = await base44.entities.Score.filter({ created_by_id: myId }, "-level", 1);
+      if (!existing.length) return true;
+      const s = existing[0];
+      return reachedLevel > s.level || (reachedLevel === s.level && streakVal > s.streak);
+    } catch (e) {
+      return true;
+    }
+  }, [myId]);
+
+  const submitScore = useCallback(async (reachedLevel, streakVal, name) => {
+    try {
+      const existing = await base44.entities.Score.filter({ created_by_id: myId }, "-level", 1);
+      if (existing.length) {
+        const s = existing[0];
+        if (reachedLevel > s.level || (reachedLevel === s.level && streakVal > s.streak)) {
+          await base44.entities.Score.update(s.id, {
             level: reachedLevel,
             streak: streakVal,
+            player_name: name,
           });
         }
-      } catch (e) {
-        /* ignore */
+      } else {
+        await base44.entities.Score.create({
+          player_name: name,
+          level: reachedLevel,
+          streak: streakVal,
+        });
       }
-    },
-    [myId, myName]
-  );
+    } catch (e) {
+      /* ignore */
+    }
+  }, [myId]);
+
+  const handleGameOver = useCallback(async () => {
+    const reachedLevel = level;
+    const streakVal = streak;
+    if (await checkQualifies(reachedLevel, streakVal)) {
+      if (displayName) {
+        await submitScore(reachedLevel, streakVal, displayName);
+        setModal("gameover");
+      } else {
+        setPendingScore({ level: reachedLevel, streak: streakVal });
+        setModal("nameprompt");
+      }
+    } else {
+      setModal("gameover");
+    }
+  }, [level, streak, displayName, checkQualifies, submitScore]);
 
   const handleLevelComplete = useCallback(() => {
     setRunning(false);
@@ -82,13 +106,12 @@ export default function Home() {
     if (nl <= 0) {
       setLives(0);
       setRunning(false);
-      setModal("gameover");
-      submitScore(level, livesRef.current >= 0 ? streak : 0);
+      handleGameOver();
     } else {
       setLives(nl);
       setResetToken((t) => t + 1);
     }
-  }, [level, streak, submitScore]);
+  }, [handleGameOver]);
 
   const nextLevel = () => {
     setLevel((l) => l + 1);
@@ -116,6 +139,21 @@ export default function Home() {
     setAd(null);
     setRunning(true);
     setResetToken((t) => t + 1);
+  };
+
+  const onNameSubmit = async (name) => {
+    setDisplayName(name);
+    if (pendingScore) await submitScore(pendingScore.level, pendingScore.streak, name);
+    setPendingScore(null);
+    setModal("gameover");
+  };
+
+  const onNameSkip = async () => {
+    const name = generateGoofyName();
+    setDisplayName(name);
+    if (pendingScore) await submitScore(pendingScore.level, pendingScore.streak, name);
+    setPendingScore(null);
+    setModal("gameover");
   };
 
   const cfg = getLevelConfig(level);
@@ -147,6 +185,14 @@ export default function Home() {
             <AnimatePresence>
               {modal === "levelcomplete" && (
                 <LevelCompleteModal level={level} onNext={nextLevel} />
+              )}
+              {modal === "nameprompt" && (
+                <NamePromptModal
+                  defaultValue={myName}
+                  score={pendingScore}
+                  onSubmit={onNameSubmit}
+                  onSkip={onNameSkip}
+                />
               )}
               {modal === "gameover" && (
                 <GameOverModal level={level} onWatchAd={watchAd} onRestart={restart} />

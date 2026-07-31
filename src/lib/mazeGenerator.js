@@ -162,7 +162,9 @@ export function updateHazard(h, dt, maze, cs) {
     h.cellX = h.targetX;
     h.cellY = h.targetY;
     const cell = maze.grid[h.cellY * maze.cols + h.cellX];
-    const valid = [0, 1, 2, 3].filter((dd) => !cell.walls[dd]);
+    const valid = [0, 1, 2, 3].filter(
+      (dd) => !cell.walls[dd] && !(cell.x + DX[dd] === 0 && cell.y + DY[dd] === 0)
+    );
     if (valid.length === 0) {
       h.dir = -1;
       return;
