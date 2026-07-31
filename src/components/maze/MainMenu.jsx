@@ -1,11 +1,12 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { Play, Palette, BarChart3, Zap, Trophy, Flame } from "lucide-react";
+import React, { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Play, Palette, BarChart3, Zap, Trophy, Flame, ShieldCheck, X } from "lucide-react";
 import DotPreview from "@/components/maze/DotPreview";
 
-export default function MainMenu({ bestLevel, bestStreak, skinObj, onPlay, onCosmetics, onBoard }) {
+export default function MainMenu({ bestLevel, bestStreak, skinObj, onPlay, onCosmetics, onBoard, adFree, onBuyAdFree }) {
+  const [confirmAdFree, setConfirmAdFree] = useState(false);
   return (
-    <div className="flex h-[100dvh] flex-col bg-slate-950 px-6 text-white">
+    <div className="relative flex h-[100dvh] flex-col bg-slate-950 px-6 text-white">
       <div className="flex flex-1 flex-col items-center justify-center gap-7">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -40,7 +41,62 @@ export default function MainMenu({ bestLevel, bestStreak, skinObj, onPlay, onCos
             <BarChart3 className="h-5 w-5" /> Leaderboard
           </MenuButton>
         </div>
+
+        {adFree ? (
+          <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-300/80">
+            <ShieldCheck className="h-3.5 w-3.5" /> Ad-Free
+          </div>
+        ) : (
+          <button
+            onClick={() => setConfirmAdFree(true)}
+            className="text-[11px] font-medium text-white/40 underline-offset-2 transition hover:text-white/70 hover:underline"
+          >
+            Go Ad Free
+          </button>
+        )}
       </div>
+
+      <AnimatePresence>
+        {confirmAdFree && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-6 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ y: 12, scale: 0.97 }}
+              animate={{ y: 0, scale: 1 }}
+              exit={{ y: 8, scale: 0.98 }}
+              className="relative w-full max-w-xs rounded-2xl bg-slate-900 p-6 text-center ring-1 ring-white/10"
+            >
+              <button
+                onClick={() => setConfirmAdFree(false)}
+                className="absolute right-4 top-4 text-white/40 transition hover:text-white/80"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-400/15 ring-1 ring-emerald-300/30">
+                <ShieldCheck className="h-6 w-6 text-emerald-300" />
+              </div>
+              <h3 className="text-lg font-semibold text-white">Go Ad-Free</h3>
+              <p className="mt-1 text-sm text-white/50">
+                Always have six lives and never see another ad.
+              </p>
+              <p className="mt-3 text-2xl font-bold text-emerald-300">$3.99</p>
+              <button
+                onClick={() => {
+                  setConfirmAdFree(false);
+                  onBuyAdFree();
+                }}
+                className="mt-5 w-full rounded-xl bg-emerald-400 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300"
+              >
+                Continue to checkout
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

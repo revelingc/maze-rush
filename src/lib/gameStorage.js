@@ -19,6 +19,7 @@ export function loadState() {
         starOwned: !!p.starOwned,
         seenIntros: Array.isArray(p.seenIntros) ? p.seenIntros : [],
         displayName: str(p.displayName, null),
+        adFree: !!p.adFree,
       };
     }
   } catch (e) {
@@ -29,6 +30,7 @@ export function loadState() {
     skin: "default", wallColor: "#39496B", bgColor: "#0B0F1A",
     starOwned: false, seenIntros: [],
     displayName: null,
+    adFree: false,
   };
 }
 

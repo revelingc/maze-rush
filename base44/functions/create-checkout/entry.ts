@@ -79,6 +79,7 @@ Deno.serve(async (req: Request) => {
     // Trusted product catalog resolved SERVER-SIDE — the client only sends the id, never the price.
     const PRODUCTS: Record<string, { name: string; price: string; currency: string }> = {
       star: { name: "Shooting Star Ball Skin", price: "1.99", currency: "USD" },
+      adfree: { name: "Remove Ads", price: "3.99", currency: "USD" },
     };
     const product = PRODUCTS[productId];
     if (!product) {

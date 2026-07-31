@@ -29,6 +29,7 @@ export default function Home() {
   const [wallColor, setWallColor] = useState(initial.wallColor || "#39496B");
   const [bgColor, setBgColor] = useState(initial.bgColor || "#0B0F1A");
   const [starOwned, setStarOwned] = useState(!!initial.starOwned);
+  const [adFree, setAdFree] = useState(!!initial.adFree);
   const [seenIntros, setSeenIntros] = useState(initial.seenIntros || []);
   const [intro, setIntro] = useState(null);
   const [running, setRunning] = useState(true);
@@ -43,6 +44,8 @@ export default function Home() {
 
   const livesRef = useRef(lives);
   livesRef.current = lives;
+  const adFreeRef = useRef(adFree);
+  adFreeRef.current = adFree;
   const pointer = useRef({ active: false, ax: 0, ay: 0, x: 0, y: 0, maxR: 70 });
 
   useEffect(() => {
@@ -50,18 +53,21 @@ export default function Home() {
       setMyId(me.id);
       const name = me.full_name || (me.email || "").split("@")[0] || "";
       setMyName(name);
-      // Verify Shooting Star ownership from paid purchase records (server-authoritative).
+      // Verify ownership from paid purchase records (server-authoritative).
       try {
         const paid = await base44.entities.Base44Purchase.filter({
-          appUserId: me.id, productId: "star", status: "paid",
+          appUserId: me.id, status: "paid",
         });
-        if (paid && paid.length) setStarOwned(true);
+        if (paid && paid.length) {
+          if (paid.some((p) => p.productId === "star")) setStarOwned(true);
+          if (paid.some((p) => p.productId === "adfree")) { setAdFree(true); setLives(6); }
+        }
       } catch (e) { /* ignore */ }
     }).catch(() => {});
   }, []);
 
   useEffect(() => {
-    saveState({ level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned, seenIntros, displayName });
+    saveState({ level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned, seenIntros, displayName, adFree });
   }, [level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned, seenIntros]);
 
   useEffect(() => {
@@ -137,6 +143,11 @@ export default function Home() {
   }, [streak]);
 
   const handleLifeLost = useCallback(() => {
+    if (adFreeRef.current) {
+      // Ad-free players always have six lives — just retry the level.
+      setResetToken((t) => t + 1);
+      return;
+    }
     const nl = livesRef.current - 1;
     if (nl <= 0) {
       setLives(0);
@@ -156,7 +167,7 @@ export default function Home() {
 
   const restart = () => {
     setLevel(1);
-    setLives(3);
+    setLives(adFree ? 6 : 3);
     setStreak(0);
     setModal(null);
     setRunning(true);
@@ -170,7 +181,7 @@ export default function Home() {
 
   const onAdComplete = () => {
     const gain = ad === "premium" ? 6 : 3;
-    setLives(gain);
+    setLives((prev) => Math.min(6, prev + gain));
     setAd(null);
     setRunning(true);
     setResetToken((t) => t + 1);
@@ -194,7 +205,7 @@ export default function Home() {
   const startPlay = () => {
     if (lives <= 0) {
       setLevel(1);
-      setLives(3);
+      setLives(adFree ? 6 : 3);
       setStreak(0);
     }
     setModal(null);
@@ -227,6 +238,16 @@ export default function Home() {
     }
   };
 
+  const handleBuyAdFree = async () => {
+    try {
+      const res = await base44.functions.invoke("create-checkout", { productId: "adfree" });
+      const url = res?.data?.redirectUrl;
+      if (url) window.location.href = url;
+    } catch (e) {
+      /* ignore */
+    }
+  };
+
   const skinObj = getSkin(skin);
   const cfg = getLevelConfig(level);
 
@@ -240,6 +261,8 @@ export default function Home() {
           onPlay={startPlay}
           onCosmetics={() => setScreen("cosmetics")}
           onBoard={() => setShowBoard(true)}
+          adFree={adFree}
+          onBuyAdFree={handleBuyAdFree}
         />
         <AnimatePresence>
           {showBoard && (
