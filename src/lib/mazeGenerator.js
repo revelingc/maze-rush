@@ -76,7 +76,23 @@ export function generateMaze(cols, rows, loops = 0) {
     }
   }
 
+  // Guarantee two exits from the start cell (top-left) and two entrances into
+  // the exit cell (bottom-right). Both corners only have two in-bounds neighbors,
+  // so we open both of their interior walls, creating alternate routes in/out.
+  ensureEndpointsOpen(grid, cols, rows, idx);
+
   return { grid, cols, rows };
+}
+
+function ensureEndpointsOpen(grid, cols, rows, idx) {
+  const set = (i, wall) => { grid[i].walls[wall] = false; };
+  // Start cell (0,0): open right + bottom.
+  if (cols > 1) { set(0, 1); set(idx(1, 0), 3); }
+  if (rows > 1) { set(0, 2); set(idx(0, 1), 0); }
+  // Exit cell (cols-1, rows-1): open left + top.
+  const ex = cols - 1, ey = rows - 1;
+  if (cols > 1) { set(idx(ex, ey), 3); set(idx(ex - 1, ey), 1); }
+  if (rows > 1) { set(idx(ex, ey), 0); set(idx(ex, ey - 1), 2); }
 }
 
 /**
