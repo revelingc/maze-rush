@@ -21,7 +21,7 @@ export function renderGame(ctx, st) {
   const u = Math.min(w, h);
 
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = "#0B0F1A";
+  ctx.fillStyle = "#0D1322";
   ctx.fillRect(0, 0, w, h);
 
   // ---- world layer (scrolled) ----
@@ -45,10 +45,10 @@ export function renderGame(ctx, st) {
 
   // walls
   ctx.lineCap = "round";
-  ctx.lineWidth = Math.max(2, cs * 0.11);
-  ctx.strokeStyle = "#39496B";
-  ctx.shadowBlur = 5;
-  ctx.shadowColor = "rgba(91,160,255,0.22)";
+  ctx.lineWidth = Math.max(2.5, cs * 0.13);
+  ctx.strokeStyle = "#4A5E8E";
+  ctx.shadowBlur = 6;
+  ctx.shadowColor = "rgba(110,170,255,0.3)";
   ctx.beginPath();
   for (const cell of maze.grid) {
     const x = cell.x * cs;
