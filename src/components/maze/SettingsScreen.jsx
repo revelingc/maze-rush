@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Vibrate, Eye, Cloud, Check, Smartphone, LogOut, Trash2 } from "lucide-react";
+import { ArrowLeft, Vibrate, Eye, Cloud, Check, Smartphone, LogOut, Trash2, Joystick } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { signIn as nativeSignIn, signOut as nativeSignOut, detectPlatform } from "@/lib/nativeAccount";
@@ -136,6 +136,54 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
           </Row>
         </Section>
 
+        {/* Steering controls */}
+        <Section
+          icon={<Joystick className="h-4 w-4 text-emerald-500" />}
+          title="Steering controls"
+          subtitle="Tune the drag-to-steer feel"
+        >
+          <Row label={`Dead zone · ${settings.steerDeadZone}px`} hint="Drag distance before the orb responds">
+            <div className="w-40">
+              <Slider
+                value={[settings.steerDeadZone]}
+                min={0}
+                max={25}
+                step={1}
+                onValueChange={(v) => update({ steerDeadZone: v[0] })}
+              />
+            </div>
+          </Row>
+          <Row label={`Sensitivity · ×${Number(settings.steerSensitivity).toFixed(1)}`} hint="Top steering speed">
+            <div className="w-40">
+              <Slider
+                value={[settings.steerSensitivity]}
+                min={0.5}
+                max={2}
+                step={0.1}
+                onValueChange={(v) => update({ steerSensitivity: v[0] })}
+              />
+            </div>
+          </Row>
+          <Row label="Response curve" hint="How steering ramps with drag">
+            <div className="w-56">
+              <Segmented
+                value={settings.steerCurve}
+                onChange={(v) => update({ steerCurve: v })}
+                options={[
+                  { value: "linear", label: "Linear" },
+                  { value: "smooth", label: "Smooth" },
+                  { value: "precise", label: "Precise" },
+                ]}
+              />
+            </div>
+          </Row>
+          <p className="text-[11px] leading-relaxed text-slate-500">
+            <span className="font-medium text-slate-600">Smooth</span> eases in for fine control at small drags;{" "}
+            <span className="font-medium text-slate-600">Precise</span> reacts quicker near the center. Tune these
+            if the orb feels sluggish or twitchy.
+          </p>
+        </Section>
+
         {/* Account */}
         <Section
           icon={<Cloud className="h-4 w-4 text-indigo-500" />}
@@ -258,6 +306,27 @@ function Row({ label, hint, children }) {
         {hint && <p className="text-[11px] text-slate-500">{hint}</p>}
       </div>
       <div className="shrink-0">{children}</div>
+    </div>
+  );
+}
+
+function Segmented({ value, options, onChange }) {
+  return (
+    <div className="flex rounded-lg bg-slate-100 p-0.5 ring-1 ring-slate-200">
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          onClick={() => onChange(o.value)}
+          className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition ${
+            value === o.value
+              ? "bg-white text-slate-900 shadow-sm"
+              : "text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          {o.label}
+        </button>
+      ))}
     </div>
   );
 }

@@ -394,6 +394,9 @@ export default function Home() {
               trailStyle={trailCfg?.style || null}
               trailColor={trailCfg?.color || null}
               cycle={cycle}
+              deadZone={settings.steerDeadZone}
+              sensitivity={settings.steerSensitivity}
+              curve={settings.steerCurve}
             />
             <AnimatePresence>
               {modal === "levelcomplete" && (
@@ -433,7 +436,7 @@ export default function Home() {
             </AnimatePresence>
           </div>
           <div className="relative h-32 shrink-0">
-            <ControlPad pointer={pointer} disabled={!running} />
+            <ControlPad pointer={pointer} disabled={!running} deadZone={settings.steerDeadZone} />
             <button
               onClick={goHome}
               className="absolute bottom-2 left-2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-slate-800/80 text-white/80 ring-1 ring-white/10 backdrop-blur transition hover:bg-slate-700 hover:text-white"

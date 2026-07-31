@@ -9,7 +9,7 @@ import React, { useEffect, useRef, useState } from "react";
  *  - pointer: shared ref { active, ax, ay, x, y, maxR }
  *  - disabled: ignore input when true (modals / not running)
  */
-export default function ControlPad({ pointer, disabled }) {
+export default function ControlPad({ pointer, disabled, deadZone = 8 }) {
   const padRef = useRef(null);
   const [maxR, setMaxR] = useState(70);
   const [knob, setKnob] = useState(null); // { ax, ay, kx, ky } when active
@@ -87,6 +87,12 @@ export default function ControlPad({ pointer, disabled }) {
             className="pointer-events-none absolute rounded-full border border-teal-300/30"
             style={{ width: maxR * 2, height: maxR * 2, left: knob.ax - maxR, top: knob.ay - maxR }}
           />
+          {deadZone > 0 && (
+            <div
+              className="pointer-events-none absolute rounded-full border border-white/15"
+              style={{ width: deadZone * 2, height: deadZone * 2, left: knob.ax - deadZone, top: knob.ay - deadZone }}
+            />
+          )}
           <div
             className="pointer-events-none absolute rounded-full bg-teal-300/85 shadow-[0_0_12px_rgba(94,234,212,0.6)]"
             style={{ width: 30, height: 30, left: knob.ax + knob.kx - 15, top: knob.ay + knob.ky - 15 }}

@@ -22,7 +22,9 @@ const VISIBLE_CELLS = 7; // cells shown across the viewport width
  *  - pointer: shared ref { active, ax, ay, x, y, maxR }
  *  - level, running, resetToken, onLevelComplete, onLifeLost
  */
-export default function MazeCanvas({ level, running, resetToken, onLevelComplete, onLifeLost, pointer, skinColor, skinStar, skinBlackhole, wallColor, bgColor, hazardColor, laserColor, hunterColor, reducedMotion, trailStyle, trailColor, cycle }) {
+const CURVE_GAMMA = { linear: 1, smooth: 1.6, precise: 0.6 };
+
+export default function MazeCanvas({ level, running, resetToken, onLevelComplete, onLifeLost, pointer, skinColor, skinStar, skinBlackhole, wallColor, bgColor, hazardColor, laserColor, hunterColor, reducedMotion, trailStyle, trailColor, cycle, deadZone = 8, sensitivity = 1, curve = "linear" }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const stateRef = useRef(null);
@@ -158,6 +160,9 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       trailStyle: trailStyle || null,
       trailColor: trailColor || null,
       trailParticles: [],
+      deadZone: deadZone,
+      sensitivity: sensitivity,
+      gamma: CURVE_GAMMA[curve] ?? 1,
     };
 
     deadRef.current = false;
@@ -192,6 +197,15 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
     const st = stateRef.current;
     if (st) st.reducedMotion = !!reducedMotion;
   }, [reducedMotion]);
+
+  // Live-apply steering tuning so changes take effect without a level reset.
+  useEffect(() => {
+    const st = stateRef.current;
+    if (!st) return;
+    st.deadZone = deadZone;
+    st.sensitivity = sensitivity;
+    st.gamma = CURVE_GAMMA[curve] ?? 1;
+  }, [deadZone, sensitivity, curve]);
 
   useEffect(() => {
     const loop = (now) => {
@@ -247,16 +261,21 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
   const { ball, cs, maze, hazards, lasers, hunters, cfg } = st;
   const maxSpeed = cs * 11;
   const maxR = (pointer && pointer.current.maxR) || 70;
+  const deadZone = st.deadZone;
+  const sens = st.sensitivity;
+  const gamma = st.gamma;
 
   // joystick -> velocity
   if (pointer && pointer.current.active) {
     const dx = pointer.current.x - pointer.current.ax;
     const dy = pointer.current.y - pointer.current.ay;
     const mag = Math.hypot(dx, dy);
-    if (mag > 8) {
+    if (mag > deadZone) {
       st.moved = true;
       const clamped = Math.min(mag, maxR);
-      const speed = (clamped / maxR) * maxSpeed;
+      const norm = clamped / maxR; // 0..1 of full deflection
+      const curved = Math.pow(norm, gamma); // response curve
+      const speed = curved * maxSpeed * sens;
       ball.vx = (dx / mag) * speed;
       ball.vy = (dy / mag) * speed;
     } else {

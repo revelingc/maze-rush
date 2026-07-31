@@ -114,18 +114,22 @@ export function loadSettings() {
     if (raw) {
       const p = JSON.parse(raw);
       const num = (v, d) => (Number.isFinite(v) ? v : d);
+      const curve = typeof p.steerCurve === "string" && ["linear", "smooth", "precise"].includes(p.steerCurve) ? p.steerCurve : "linear";
       return {
         hapticsEnabled: p.hapticsEnabled !== false,
         vibrationAmount: num(p.vibrationAmount, 30),
         colorblind: !!p.colorblind,
         reducedMotion: !!p.reducedMotion,
         account: p.account || null,
+        steerDeadZone: num(p.steerDeadZone, 8),
+        steerSensitivity: num(p.steerSensitivity, 1),
+        steerCurve: curve,
       };
     }
   } catch (e) {
     /* ignore */
   }
-  return { hapticsEnabled: true, vibrationAmount: 30, colorblind: false, reducedMotion: false, account: null };
+  return { hapticsEnabled: true, vibrationAmount: 30, colorblind: false, reducedMotion: false, account: null, steerDeadZone: 8, steerSensitivity: 1, steerCurve: "linear" };
 }
 
 export function saveSettings(s) {
