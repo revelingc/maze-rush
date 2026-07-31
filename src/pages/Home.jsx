@@ -173,7 +173,7 @@ export default function Home() {
 
   const restart = () => {
     setLevel(1);
-    setLives(adFree ? 6 : 3);
+    setLives(adFree ? 10 : 5);
     setStreak(0);
     setAdUsed(false);
     setModal(null);
@@ -187,10 +187,10 @@ export default function Home() {
   };
 
   const onAdComplete = () => {
-    const gain = ad === "premium" ? 6 : 3;
+    const gain = ad === "premium" ? 10 : 5;
     setAd(null);
     setAdUsed(true);
-    setLives(gain);
+    setLives((l) => l + gain);
     setRunning(true);
     setResetToken((t) => t + 1);
   };
@@ -213,7 +213,7 @@ export default function Home() {
   const startPlay = () => {
     if (lives <= 0) {
       setLevel(1);
-      setLives(adFree ? 6 : 3);
+      setLives(adFree ? 10 : 5);
       setStreak(0);
       setAdUsed(false);
     }
@@ -255,7 +255,7 @@ export default function Home() {
       const res = await purchaseProduct("adfree");
       if (res?.ok) {
         setAdFree(true);
-        setLives(6);
+        setLives(10);
         setLevel(1);
         setStreak(0);
         setAdUsed(false);
@@ -296,7 +296,7 @@ export default function Home() {
       } else if (bundleId === "bundle_consumables") {
         setAdFree(true);
         setTrailsOwned(allTrailIds);
-        setLives(6);
+        setLives(10);
         setLevel(1);
         setStreak(0);
         setAdUsed(false);
@@ -305,7 +305,7 @@ export default function Home() {
         setStarOwned(true);
         setAdFree(true);
         setTrailsOwned(allTrailIds);
-        setLives(6);
+        setLives(10);
         setLevel(1);
         setStreak(0);
         setAdUsed(false);

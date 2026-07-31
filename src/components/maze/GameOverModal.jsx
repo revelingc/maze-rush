@@ -29,7 +29,7 @@ export default function GameOverModal({ level, streak, canWatchAd, onWatchAd, on
                 <Film className="h-4 w-4 text-sky-300" />
                 <span className="text-sm font-medium text-white">Watch ad</span>
               </span>
-              <span className="text-sm font-semibold text-sky-300">+3 lives</span>
+              <span className="text-sm font-semibold text-sky-300">+5 lives</span>
             </button>
           )}
           <button

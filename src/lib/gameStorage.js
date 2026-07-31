@@ -9,7 +9,7 @@ export function loadState() {
       const str = (v, d) => (typeof v === "string" && v.length ? v : d);
       return {
         level: num(p.level, 1),
-        lives: num(p.lives, 3),
+        lives: num(p.lives, 5),
         streak: num(p.streak, 0),
         bestStreak: num(p.bestStreak, 0),
         bestLevel: num(p.bestLevel, 1),
@@ -32,7 +32,7 @@ export function loadState() {
     /* ignore */
   }
   return {
-    level: 1, lives: 3, streak: 0, bestStreak: 0, bestLevel: 1, cycle: 1,
+    level: 1, lives: 5, streak: 0, bestStreak: 0, bestLevel: 1, cycle: 1,
     skin: "default", wallColor: "#39496B", bgColor: "#0B0F1A",
     hazardColor: "#FB7185", laserColor: "#22D3EE", hunterColor: "#A855F7",
     starOwned: false, seenIntros: [],
