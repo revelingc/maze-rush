@@ -2,6 +2,7 @@
 // separate DOM control pad below the maze, so nothing is drawn over the map.
 
 import { laserSegment } from "@/lib/mazeGenerator";
+import { drawTrail } from "@/lib/trails";
 
 function drawStar(ctx, cx, cy, r, now) {
   const rot = now / 600;
@@ -183,6 +184,9 @@ export function renderGame(ctx, st) {
     ctx.stroke();
     ctx.restore();
   }
+
+  // trail (behind ball)
+  drawTrail(ctx, st);
 
   // ball (blink while invulnerable)
   const blink = invuln > 0 && Math.floor(now / 90) % 2 === 0;

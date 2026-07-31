@@ -10,6 +10,7 @@ import {
   pointSegDist,
 } from "@/lib/mazeGenerator";
 import { renderGame } from "@/lib/mazeRenderer";
+import { updateTrail } from "@/lib/trails";
 
 const VISIBLE_CELLS = 7; // cells shown across the viewport width
 
@@ -21,7 +22,7 @@ const VISIBLE_CELLS = 7; // cells shown across the viewport width
  *  - pointer: shared ref { active, ax, ay, x, y, maxR }
  *  - level, running, resetToken, onLevelComplete, onLifeLost
  */
-export default function MazeCanvas({ level, running, resetToken, onLevelComplete, onLifeLost, pointer, skinColor, skinStar, wallColor, bgColor, hazardColor, laserColor, hunterColor, reducedMotion }) {
+export default function MazeCanvas({ level, running, resetToken, onLevelComplete, onLifeLost, pointer, skinColor, skinStar, wallColor, bgColor, hazardColor, laserColor, hunterColor, reducedMotion, trailStyle, trailColor }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const stateRef = useRef(null);
@@ -153,6 +154,9 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       laserColor: laserColor || "#22D3EE",
       hunterColor: hunterColor || "#A855F7",
       reducedMotion: !!reducedMotion,
+      trailStyle: trailStyle || null,
+      trailColor: trailColor || null,
+      trailParticles: [],
     };
 
     deadRef.current = false;
@@ -176,6 +180,7 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       st.exitX *= ratio; st.exitY *= ratio;
       for (const hz of st.hazards) { hz.x *= ratio; hz.y *= ratio; hz.r = newCs * 0.27; }
       for (const hu of st.hunters) { hu.x *= ratio; hu.y *= ratio; hu.r = newCs * 0.28; }
+      for (const p of st.trailParticles) { p.x *= ratio; p.y *= ratio; p.size *= ratio; }
       st.ctx = ctx;
     };
     window.addEventListener("resize", onResize);
@@ -287,6 +292,8 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
   for (const h of hazards) updateHazard(h, odt, maze, cs);
   for (const l of lasers) updateLaser(l, odt);
   for (const hu of hunters) updateHunter(hu, odt, ball, maze, cs);
+
+  updateTrail(st, dt);
 
   if (st.invuln > 0) st.invuln -= dt;
 

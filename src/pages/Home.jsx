@@ -13,6 +13,7 @@ import CosmeticsScreen from "@/components/maze/CosmeticsScreen";
 import ObstacleIntroModal from "@/components/maze/ObstacleIntroModal";
 import { loadState, saveState, loadHighScores, addHighScore, loadBestTimes, setBestTime, loadSettings, saveSettings } from "@/lib/gameStorage";
 import { purchaseProduct } from "@/lib/nativePurchase";
+import { getTrail } from "@/lib/trails";
 import { shareResult } from "@/lib/shareUtils";
 import { getLevelConfig, INTRO_LEVELS } from "@/lib/mazeGenerator";
 import { generateGoofyName } from "@/lib/nameUtils";
@@ -36,6 +37,8 @@ export default function Home() {
   const [hunterColor, setHunterColor] = useState(initial.hunterColor || "#A855F7");
   const [starOwned, setStarOwned] = useState(!!initial.starOwned);
   const [adFree, setAdFree] = useState(!!initial.adFree);
+  const [trail, setTrail] = useState(initial.trail || null);
+  const [trailsOwned, setTrailsOwned] = useState(initial.trailsOwned || []);
   const [seenIntros, setSeenIntros] = useState(initial.seenIntros || []);
   const [intro, setIntro] = useState(null);
   const [running, setRunning] = useState(true);
@@ -59,8 +62,8 @@ export default function Home() {
   const pointer = useRef({ active: false, ax: 0, ay: 0, x: 0, y: 0, maxR: 70 });
 
   useEffect(() => {
-    saveState({ level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, hazardColor, laserColor, hunterColor, starOwned, seenIntros, displayName, adFree });
-  }, [level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned, seenIntros, adFree]);
+    saveState({ level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, hazardColor, laserColor, hunterColor, starOwned, seenIntros, displayName, adFree, trail, trailsOwned });
+  }, [level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned, seenIntros, adFree, trail, trailsOwned]);
 
   useEffect(() => {
     saveSettings(settings);
@@ -236,6 +239,20 @@ export default function Home() {
     }
   };
 
+  const handleBuyTrail = async (t) => {
+    setBuying(true);
+    try {
+      const res = await purchaseProduct(`trail_${t.id}`);
+      if (res?.ok) {
+        setTrailsOwned((o) => (o.includes(t.id) ? o : [...o, t.id]));
+      } else if (res?.reason === "unavailable") {
+        alert("In-app purchases are available in the installed app.");
+      }
+    } finally {
+      setBuying(false);
+    }
+  };
+
   const handleShare = useCallback(async () => {
     await shareResult({ level, streak, bestStreak });
   }, [level, streak, bestStreak]);
@@ -251,6 +268,7 @@ export default function Home() {
   const effHazard = cb ? "#F0E442" : hazardColor;
   const effLaser = cb ? "#0072B2" : laserColor;
   const effHunter = cb ? "#D55E00" : hunterColor;
+  const trailCfg = trail ? getTrail(trail) : null;
 
   if (screen === "menu") {
     return (
@@ -294,6 +312,10 @@ export default function Home() {
         setHunterColor={setHunterColor}
         starOwned={starOwned}
         onBuyStar={handleBuyStar}
+        trail={trail}
+        setTrail={setTrail}
+        trailsOwned={trailsOwned}
+        onBuyTrail={handleBuyTrail}
         buying={buying}
         onBack={() => setScreen("menu")}
       />
@@ -355,6 +377,8 @@ export default function Home() {
               laserColor={effLaser}
               hunterColor={effHunter}
               reducedMotion={settings.reducedMotion}
+              trailStyle={trailCfg?.style || null}
+              trailColor={trailCfg?.color || null}
             />
             <AnimatePresence>
               {modal === "levelcomplete" && (

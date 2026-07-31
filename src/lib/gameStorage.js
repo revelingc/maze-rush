@@ -23,6 +23,8 @@ export function loadState() {
         seenIntros: Array.isArray(p.seenIntros) ? p.seenIntros : [],
         displayName: str(p.displayName, null),
         adFree: !!p.adFree,
+        trail: str(p.trail, null),
+        trailsOwned: Array.isArray(p.trailsOwned) ? p.trailsOwned : [],
       };
     }
   } catch (e) {
@@ -35,6 +37,8 @@ export function loadState() {
     starOwned: false, seenIntros: [],
     displayName: null,
     adFree: false,
+    trail: null,
+    trailsOwned: [],
   };
 }
 

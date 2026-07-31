@@ -1,6 +1,7 @@
 import React from "react";
 import { ChevronLeft, Lock, Check } from "lucide-react";
 import { DOT_SKINS, isSkinUnlocked } from "@/lib/skins";
+import { TRAILS } from "@/lib/trails";
 import DotPreview from "@/components/maze/DotPreview";
 
 const WALL_PRESETS = ["#39496B", "#475569", "#7C3AED", "#DB2777", "#0EA5E9", "#F59E0B", "#10B981", "#F8FAFC"];
@@ -23,6 +24,10 @@ export default function CosmeticsScreen({
   setHunterColor,
   starOwned,
   onBuyStar,
+  trail,
+  setTrail,
+  trailsOwned,
+  onBuyTrail,
   buying,
   onBack,
 }) {
@@ -102,6 +107,59 @@ export default function CosmeticsScreen({
           </div>
         </Section>
 
+        <Section title="Move Trails" subtitle="Leave a signature trail behind your dot.">
+          <div className="grid grid-cols-3 gap-3">
+            {TRAILS.map((t) => {
+              const isStar = !!t.star;
+              const owned = isStar ? !!starOwned : trailsOwned.includes(t.id);
+              const selected = t.id === trail;
+              return (
+                <div
+                  key={t.id}
+                  className={
+                    "relative flex flex-col items-center gap-2 rounded-2xl p-3 ring-1 transition " +
+                    (selected
+                      ? "bg-teal-400/15 ring-teal-300/50"
+                      : "bg-white/5 ring-white/10")
+                  }
+                >
+                  <TrailPreview trail={t} />
+                  <span className="text-xs font-medium">{t.name}</span>
+                  {isStar && !starOwned ? (
+                    <button
+                      onClick={onBuyStar}
+                      disabled={buying}
+                      className="rounded-full bg-amber-400 px-3 py-1 text-[11px] font-semibold text-amber-950 transition hover:bg-amber-300 disabled:opacity-60"
+                    >
+                      {buying ? "…" : "Star $1.99"}
+                    </button>
+                  ) : owned ? (
+                    <button
+                      onClick={() => setTrail(selected ? null : t.id)}
+                      className="text-[10px] text-white/50 hover:text-white"
+                    >
+                      {selected ? "Selected" : "Select"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => onBuyTrail(t)}
+                      disabled={buying}
+                      className="rounded-full bg-teal-400 px-3 py-1 text-[11px] font-semibold text-slate-950 transition hover:bg-teal-300 disabled:opacity-60"
+                    >
+                      {buying ? "…" : `$${t.price.toFixed(2)}`}
+                    </button>
+                  )}
+                  {selected && (
+                    <span className="absolute right-2 top-2 text-teal-300">
+                      <Check className="h-3.5 w-3.5" />
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Section>
+
         <Section title="Wall Color" subtitle="Free — pick any color.">
           <ColorRow value={wallColor} onChange={setWallColor} presets={WALL_PRESETS} />
         </Section>
@@ -133,6 +191,27 @@ function Section({ title, subtitle, children }) {
       <p className="mb-3 text-xs text-white/40">{subtitle}</p>
       {children}
     </section>
+  );
+}
+
+function TrailPreview({ trail }) {
+  const c = trail.color;
+  return (
+    <div className="flex h-8 items-center justify-center gap-1">
+      {[0.25, 0.45, 0.7, 1].map((o, i) => (
+        <span
+          key={i}
+          className="rounded-full"
+          style={{
+            width: 10 - i * 1.6,
+            height: 10 - i * 1.6,
+            background: c,
+            opacity: o,
+            boxShadow: `0 0 6px ${c}`,
+          }}
+        />
+      ))}
+    </div>
   );
 }
 
