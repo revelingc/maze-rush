@@ -161,3 +161,20 @@ export function clearAllData() {
     try { localStorage.removeItem(k); } catch (e) { /* ignore */ }
   });
 }
+
+// Clears purchase-related unlocks (ad-free, Shooting Star skin, trails) while
+// keeping level progress, streaks, scores, and settings intact.
+export function resetPurchases() {
+  try {
+    const s = loadState();
+    s.starOwned = false;
+    s.adFree = false;
+    s.trailsOwned = [];
+    s.trail = null;
+    if (s.skin === "star") s.skin = "default";
+    saveState(s);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}

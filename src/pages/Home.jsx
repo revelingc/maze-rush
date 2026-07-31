@@ -12,7 +12,7 @@ import ControlPad from "@/components/maze/ControlPad";
 import MainMenu from "@/components/maze/MainMenu";
 import CosmeticsScreen from "@/components/maze/CosmeticsScreen";
 import ObstacleIntroModal from "@/components/maze/ObstacleIntroModal";
-import { loadState, saveState, loadHighScores, addHighScore, loadBestTimes, setBestTime, loadSettings, saveSettings, renamePlayer } from "@/lib/gameStorage";
+import { loadState, saveState, loadHighScores, addHighScore, loadBestTimes, setBestTime, loadSettings, saveSettings, renamePlayer, resetPurchases } from "@/lib/gameStorage";
 import { purchaseProduct } from "@/lib/nativePurchase";
 import { getTrail } from "@/lib/trails";
 import { shareResult } from "@/lib/shareUtils";
@@ -291,6 +291,15 @@ export default function Home() {
     if (account?.name && !containsProfanity(account.name)) setDisplayName(account.name);
   }, []);
 
+  const handleResetPurchases = useCallback(() => {
+    resetPurchases();
+    setStarOwned(false);
+    setAdFree(false);
+    setTrailsOwned([]);
+    setTrail(null);
+    setSkin((s) => (s === "star" ? "default" : s));
+  }, []);
+
   const skinObj = getSkin(skin);
   const cfg = getLevelConfig(level, cycle);
   const cb = settings.colorblind;
@@ -357,6 +366,7 @@ export default function Home() {
         settings={settings}
         setSettings={setSettings}
         onAccount={handleAccount}
+        onResetPurchases={handleResetPurchases}
         onBack={() => navigate(-1)}
       />
     );
