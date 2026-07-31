@@ -8,6 +8,7 @@ import GameOverModal from "@/components/maze/GameOverModal";
 import LevelCompleteModal from "@/components/maze/LevelCompleteModal";
 import LeaderboardModal from "@/components/maze/LeaderboardModal";
 import NamePromptModal from "@/components/maze/NamePromptModal";
+import ControlPad from "@/components/maze/ControlPad";
 import { loadState, saveState } from "@/lib/gameStorage";
 import { getLevelConfig } from "@/lib/mazeGenerator";
 import { generateGoofyName } from "@/lib/nameUtils";
@@ -30,6 +31,7 @@ export default function Home() {
 
   const livesRef = useRef(lives);
   livesRef.current = lives;
+  const pointer = useRef({ active: false, ax: 0, ay: 0, x: 0, y: 0, maxR: 70 });
 
   useEffect(() => {
     base44.auth.me().then((me) => {
@@ -169,13 +171,14 @@ export default function Home() {
         onOpenBoard={() => setShowBoard(true)}
       />
 
-      <main className="flex flex-1 items-center justify-center px-4 pb-6">
-        <div className="flex w-full max-w-[560px] flex-col items-center">
-          <p className="mb-3 text-center text-xs text-white/40">
-            Hold and drag anywhere to steer — the maze scrolls beneath you. Reach the glowing exit.
+      <main className="flex flex-1 flex-col px-4 pb-4 pt-2">
+        <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col gap-2">
+          <p className="text-center text-xs text-white/40">
+            Drag the pad below to steer — reach the glowing exit before time runs out.
           </p>
-          <div className="relative aspect-square w-full">
+          <div className="relative min-h-0 flex-[4]">
             <MazeCanvas
+              pointer={pointer}
               level={level}
               running={running}
               resetToken={resetToken}
@@ -202,6 +205,9 @@ export default function Home() {
                 <LeaderboardModal myId={myId} onClose={() => setShowBoard(false)} />
               )}
             </AnimatePresence>
+          </div>
+          <div className="min-h-0 flex-[1]">
+            <ControlPad pointer={pointer} disabled={!running} />
           </div>
         </div>
       </main>

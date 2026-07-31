@@ -1,4 +1,5 @@
-// Canvas renderer for Maze Rush (scrolling world + joystick overlay).
+// Canvas renderer for Maze Rush (scrolling world). The joystick lives in a
+// separate DOM control pad below the maze, so nothing is drawn over the map.
 
 function edgePoint(ang, w, h, margin) {
   const dx = Math.cos(ang);
@@ -14,13 +15,14 @@ function edgePoint(ang, w, h, margin) {
 export function renderGame(ctx, st) {
   const {
     maze, cs, ball, hazards, exitX, exitY,
-    timer, timerMax, invuln, size, camX, camY, worldW, worldH, pointer,
+    timer, timerMax, invuln, w, h, camX, camY, worldW, worldH,
   } = st;
   const now = performance.now();
+  const u = Math.min(w, h);
 
-  ctx.clearRect(0, 0, size, size);
+  ctx.clearRect(0, 0, w, h);
   ctx.fillStyle = "#0B0F1A";
-  ctx.fillRect(0, 0, size, size);
+  ctx.fillRect(0, 0, w, h);
 
   // ---- world layer (scrolled) ----
   ctx.save();
@@ -60,13 +62,13 @@ export function renderGame(ctx, st) {
   ctx.shadowBlur = 0;
 
   // hazards
-  for (const h of hazards) {
+  for (const hz of hazards) {
     ctx.save();
     ctx.shadowBlur = 16;
     ctx.shadowColor = "#FB7185";
     ctx.fillStyle = "#FB7185";
     ctx.beginPath();
-    ctx.arc(h.x, h.y, h.r, 0, Math.PI * 2);
+    ctx.arc(hz.x, hz.y, hz.r, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }
@@ -91,9 +93,9 @@ export function renderGame(ctx, st) {
   // exit direction arrow (when exit is off-screen)
   const exScreen = exitX - camX;
   const eyScreen = exitY - camY;
-  if (exScreen < 0 || exScreen > size || eyScreen < 0 || eyScreen > size) {
-    const ang = Math.atan2(eyScreen - size / 2, exScreen - size / 2);
-    const p = edgePoint(ang, size, size, size * 0.09);
+  if (exScreen < 0 || exScreen > w || eyScreen < 0 || eyScreen > h) {
+    const ang = Math.atan2(eyScreen - h / 2, exScreen - w / 2);
+    const p = edgePoint(ang, w, h, u * 0.09);
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(ang);
@@ -101,41 +103,21 @@ export function renderGame(ctx, st) {
     ctx.shadowBlur = 10;
     ctx.shadowColor = "#34D399";
     ctx.beginPath();
-    ctx.moveTo(size * 0.04, 0);
-    ctx.lineTo(-size * 0.025, -size * 0.03);
-    ctx.lineTo(-size * 0.025, size * 0.03);
+    ctx.moveTo(u * 0.04, 0);
+    ctx.lineTo(-u * 0.025, -u * 0.03);
+    ctx.lineTo(-u * 0.025, u * 0.03);
     ctx.closePath();
-    ctx.fill();
-    ctx.restore();
-  }
-
-  // joystick overlay
-  if (pointer.active) {
-    const maxR = size * 0.22;
-    ctx.save();
-    ctx.strokeStyle = "rgba(255,255,255,0.14)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(pointer.ax, pointer.ay, maxR, 0, Math.PI * 2);
-    ctx.stroke();
-    let kx = pointer.x - pointer.ax;
-    let ky = pointer.y - pointer.ay;
-    const km = Math.hypot(kx, ky);
-    if (km > maxR) { kx = (kx / km) * maxR; ky = (ky / km) * maxR; }
-    ctx.fillStyle = "rgba(94,234,212,0.85)";
-    ctx.beginPath();
-    ctx.arc(pointer.ax + kx, pointer.ay + ky, size * 0.05, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }
 
   // timer bar (top edge)
   const pct = Math.max(0, Math.min(1, timer / timerMax));
-  const barH = Math.max(3, size * 0.012);
+  const barH = Math.max(3, u * 0.012);
   ctx.fillStyle = "rgba(255,255,255,0.06)";
-  ctx.fillRect(0, 0, size, barH);
+  ctx.fillRect(0, 0, w, barH);
   ctx.fillStyle = pct > 0.3 ? "#5EEAD4" : "#FB7185";
-  ctx.fillRect(0, 0, size * pct, barH);
+  ctx.fillRect(0, 0, w * pct, barH);
 
   // silence unused
   void worldW; void worldH;

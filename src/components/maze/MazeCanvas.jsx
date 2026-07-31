@@ -7,48 +7,55 @@ import {
 } from "@/lib/mazeGenerator";
 import { renderGame } from "@/lib/mazeRenderer";
 
-const VISIBLE_CELLS = 7; // cells shown across the viewport
+const VISIBLE_CELLS = 7; // cells shown across the viewport width
 
 /**
- * Scrolling maze runner. The world scrolls beneath the runner; the thumb
- * acts as a relative joystick to steer at speed (2D Maze Runner feel).
+ * Scrolling maze runner. The world scrolls beneath the runner; steering comes
+ * from a separate ControlPad below the maze (shared `pointer` ref).
  *
  * Props:
+ *  - pointer: shared ref { active, ax, ay, x, y, maxR }
  *  - level, running, resetToken, onLevelComplete, onLifeLost
  */
-export default function MazeCanvas({ level, running, resetToken, onLevelComplete, onLifeLost }) {
+export default function MazeCanvas({ level, running, resetToken, onLevelComplete, onLifeLost, pointer }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const stateRef = useRef(null);
   const rafRef = useRef(null);
   const lastRef = useRef(0);
   const deadRef = useRef(false);
-  const pointer = useRef({ active: false, ax: 0, ay: 0, x: 0, y: 0 });
 
   const cbRef = useRef({ onLevelComplete, onLifeLost });
   cbRef.current = { onLevelComplete, onLifeLost };
   const runningRef = useRef(running);
   runningRef.current = running;
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
+  const fitCanvas = () => {
     const container = containerRef.current;
-    if (!canvas || !container) return;
+    const canvas = canvasRef.current;
+    if (!container || !canvas) return null;
+    const rect = container.getBoundingClientRect();
+    const w = Math.max(220, rect.width);
+    const h = Math.max(220, rect.height);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + "px";
+    canvas.style.height = h + "px";
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { w, h, ctx };
+  };
 
+  useEffect(() => {
+    if (!canvasRef.current || !containerRef.current) return;
     const cfg = getLevelConfig(level);
     const loops = cfg.cols + cfg.hazards * 3;
     const maze = generateMaze(cfg.cols, cfg.rows, loops);
-    const rect = container.getBoundingClientRect();
-    const size = Math.max(220, Math.min(rect.width, rect.height));
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = size * dpr;
-    canvas.height = size * dpr;
-    canvas.style.width = size + "px";
-    canvas.style.height = size + "px";
-    const ctx = canvas.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    const cs = size / VISIBLE_CELLS;
+    const dims = fitCanvas();
+    if (!dims) return;
+    const { w, h, ctx } = dims;
+    const cs = w / VISIBLE_CELLS;
     const worldW = cfg.cols * cs;
     const worldH = cfg.rows * cs;
     const ball = { x: cs / 2, y: cs / 2, r: cs * 0.3, vx: 0, vy: 0 };
@@ -87,38 +94,29 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       exitX: (cfg.cols - 1) * cs + cs / 2,
       exitY: (cfg.rows - 1) * cs + cs / 2,
       timer: cfg.timer, timerMax: cfg.timer, invuln: 1.0, moved: false,
-      cfg, size, ctx, worldW, worldH, camX: 0, camY: 0,
+      cfg, w, h, ctx, worldW, worldH, camX: 0, camY: 0,
     };
 
     deadRef.current = false;
-    pointer.current.active = false;
+    if (pointer) pointer.current.active = false;
     lastRef.current = performance.now();
   }, [level, resetToken]);
 
   useEffect(() => {
     const onResize = () => {
       const st = stateRef.current;
-      const container = containerRef.current;
-      const canvas = canvasRef.current;
-      if (!st || !container || !canvas) return;
-      const rect = container.getBoundingClientRect();
-      const size = Math.max(220, Math.min(rect.width, rect.height));
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = size * dpr;
-      canvas.height = size * dpr;
-      canvas.style.width = size + "px";
-      canvas.style.height = size + "px";
-      const ctx = canvas.getContext("2d");
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const newCs = size / VISIBLE_CELLS;
+      if (!st) return;
+      const dims = fitCanvas();
+      if (!dims) return;
+      const { w, h, ctx } = dims;
+      const newCs = w / VISIBLE_CELLS;
       const ratio = newCs / st.cs;
-      st.size = size;
-      st.cs = newCs;
+      st.w = w; st.h = h; st.cs = newCs;
       st.worldW = st.cfg.cols * newCs;
       st.worldH = st.cfg.rows * newCs;
       st.ball.x *= ratio; st.ball.y *= ratio; st.ball.r = newCs * 0.3;
       st.exitX *= ratio; st.exitY *= ratio;
-      for (const h of st.hazards) { h.x *= ratio; h.y *= ratio; h.r = newCs * 0.27; }
+      for (const hz of st.hazards) { hz.x *= ratio; hz.y *= ratio; hz.r = newCs * 0.27; }
       st.ctx = ctx;
     };
     window.addEventListener("resize", onResize);
@@ -136,41 +134,15 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       if (runningRef.current && !deadRef.current) {
         updateGame(st, dt, pointer, deadRef, cbRef);
       }
-      st.pointer = pointer.current;
       renderGame(st.ctx, st);
     };
     rafRef.current = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
-  const handlePointer = (e, type) => {
-    const st = stateRef.current;
-    if (!st) return;
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    if (type === "down") {
-      pointer.current = { active: true, ax: x, ay: y, x, y };
-      canvasRef.current.setPointerCapture?.(e.pointerId);
-    } else if (type === "move") {
-      if (pointer.current.active) { pointer.current.x = x; pointer.current.y = y; }
-    } else {
-      pointer.current.active = false;
-    }
-  };
-
   return (
-    <div ref={containerRef} className="relative flex h-full w-full items-center justify-center">
-      <canvas
-        ref={canvasRef}
-        onPointerDown={(e) => handlePointer(e, "down")}
-        onPointerMove={(e) => handlePointer(e, "move")}
-        onPointerUp={(e) => handlePointer(e, "up")}
-        onPointerCancel={(e) => handlePointer(e, "up")}
-        onPointerLeave={(e) => handlePointer(e, "up")}
-        style={{ touchAction: "none" }}
-        className="rounded-2xl"
-      />
+    <div ref={containerRef} className="relative h-full w-full">
+      <canvas ref={canvasRef} className="rounded-2xl" />
     </div>
   );
 }
@@ -180,22 +152,22 @@ function clamp(v, lo, hi) {
 }
 
 function updateCamera(st) {
-  const { ball, size, worldW, worldH } = st;
-  const loX = worldW <= size ? (worldW - size) / 2 : 0;
-  const hiX = worldW <= size ? (worldW - size) / 2 : worldW - size;
-  const loY = worldH <= size ? (worldH - size) / 2 : 0;
-  const hiY = worldH <= size ? (worldH - size) / 2 : worldH - size;
-  st.camX = clamp(ball.x - size / 2, loX, hiX);
-  st.camY = clamp(ball.y - size / 2, loY, hiY);
+  const { ball, w, h, worldW, worldH } = st;
+  const loX = worldW <= w ? (worldW - w) / 2 : 0;
+  const hiX = worldW <= w ? (worldW - w) / 2 : worldW - w;
+  const loY = worldH <= h ? (worldH - h) / 2 : 0;
+  const hiY = worldH <= h ? (worldH - h) / 2 : worldH - h;
+  st.camX = clamp(ball.x - w / 2, loX, hiX);
+  st.camY = clamp(ball.y - h / 2, loY, hiY);
 }
 
 function updateGame(st, dt, pointer, deadRef, cbRef) {
   const { ball, cs, maze, hazards, cfg } = st;
   const maxSpeed = cs * 16;
-  const maxR = st.size * 0.22;
+  const maxR = (pointer && pointer.current.maxR) || 70;
 
   // joystick -> velocity
-  if (pointer.current.active) {
+  if (pointer && pointer.current.active) {
     const dx = pointer.current.x - pointer.current.ax;
     const dy = pointer.current.y - pointer.current.ay;
     const mag = Math.hypot(dx, dy);
