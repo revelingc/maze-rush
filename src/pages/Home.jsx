@@ -16,7 +16,7 @@ import { loadState, saveState, loadHighScores, addHighScore, loadBestTimes, setB
 import { purchaseProduct } from "@/lib/nativePurchase";
 import { getTrail } from "@/lib/trails";
 import { shareResult } from "@/lib/shareUtils";
-import { getLevelConfig, INTRO_LEVELS } from "@/lib/mazeGenerator";
+import { getLevelConfig } from "@/lib/mazeGenerator";
 import { generateGoofyName, containsProfanity } from "@/lib/nameUtils";
 import { getSkin } from "@/lib/skins";
 import StatsScreen from "@/components/maze/StatsScreen";
@@ -75,15 +75,21 @@ export default function Home() {
     if (level > bestLevel) setBestLevel(level);
   }, [level, bestLevel]);
 
-  // Show a one-time intro overlay when entering a level that debuts an obstacle.
+  // Show a one-time intro overlay the first time an obstacle type appears in
+  // the current level (covers players who start a run past the debut level).
   useEffect(() => {
     if (screen !== "/play") return;
-    const key = INTRO_LEVELS[level];
-    if (key && !seenIntros.includes(key)) {
+    const cfg = getLevelConfig(level, cycle);
+    const present = [];
+    if (cfg.hazards > 0) present.push("hazards");
+    if (cfg.lasers > 0) present.push("lasers");
+    if (cfg.hunters > 0) present.push("hunters");
+    const key = present.find((k) => !seenIntros.includes(k));
+    if (key) {
       setIntro(key);
       setRunning(false);
     }
-  }, [screen, level, seenIntros]);
+  }, [screen, level, cycle, seenIntros]);
 
   const checkQualifies = useCallback((reachedLevel, streakVal) => {
     const scores = loadHighScores();
