@@ -12,12 +12,12 @@ import ControlPad from "@/components/maze/ControlPad";
 import MainMenu from "@/components/maze/MainMenu";
 import CosmeticsScreen from "@/components/maze/CosmeticsScreen";
 import ObstacleIntroModal from "@/components/maze/ObstacleIntroModal";
-import { loadState, saveState, loadHighScores, addHighScore, loadBestTimes, setBestTime, loadSettings, saveSettings } from "@/lib/gameStorage";
+import { loadState, saveState, loadHighScores, addHighScore, loadBestTimes, setBestTime, loadSettings, saveSettings, renamePlayer } from "@/lib/gameStorage";
 import { purchaseProduct } from "@/lib/nativePurchase";
 import { getTrail } from "@/lib/trails";
 import { shareResult } from "@/lib/shareUtils";
 import { getLevelConfig, INTRO_LEVELS } from "@/lib/mazeGenerator";
-import { generateGoofyName } from "@/lib/nameUtils";
+import { generateGoofyName, containsProfanity } from "@/lib/nameUtils";
 import { getSkin } from "@/lib/skins";
 import StatsScreen from "@/components/maze/StatsScreen";
 import SettingsScreen from "@/components/maze/SettingsScreen";
@@ -98,6 +98,15 @@ export default function Home() {
   const submitScore = useCallback((reachedLevel, streakVal, name) => {
     addHighScore({ player_name: name, level: reachedLevel, streak: streakVal });
   }, []);
+
+  // Rename the player on the leaderboard, re-tagging their existing entries.
+  const handleRename = useCallback((name) => {
+    const clean = (name || "").trim().slice(0, 16);
+    if (!clean || containsProfanity(clean)) return;
+    const prev = displayName;
+    setDisplayName(clean);
+    if (prev && prev !== clean) renamePlayer(prev, clean);
+  }, [displayName]);
 
   const handleGameOver = useCallback(() => {
     const reachedLevel = level;
@@ -272,7 +281,7 @@ export default function Home() {
 
   const handleAccount = useCallback((account) => {
     setSettings((s) => ({ ...s, account }));
-    if (account?.name) setDisplayName(account.name);
+    if (account?.name && !containsProfanity(account.name)) setDisplayName(account.name);
   }, []);
 
   const skinObj = getSkin(skin);
@@ -300,7 +309,7 @@ export default function Home() {
         />
         <AnimatePresence>
           {showBoard && (
-            <LeaderboardModal onClose={() => setShowBoard(false)} />
+            <LeaderboardModal onClose={() => setShowBoard(false)} displayName={displayName} onRename={handleRename} />
           )}
         </AnimatePresence>
       </div>
@@ -431,7 +440,7 @@ export default function Home() {
                 <ObstacleIntroModal obstacleKey={intro} onContinue={dismissIntro} />
               )}
               {showBoard && (
-                <LeaderboardModal onClose={() => setShowBoard(false)} />
+                <LeaderboardModal onClose={() => setShowBoard(false)} displayName={displayName} onRename={handleRename} />
               )}
             </AnimatePresence>
           </div>

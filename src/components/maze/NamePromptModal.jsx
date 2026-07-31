@@ -10,7 +10,7 @@ import { containsProfanity } from "@/lib/nameUtils";
  *  - onSubmit(name): save the chosen (clean) name
  *  - onSkip(): opt out -> caller generates a goofy name
  */
-export default function NamePromptModal({ defaultValue, score, onSubmit, onSkip }) {
+export default function NamePromptModal({ defaultValue, score, onSubmit, onSkip, editMode }) {
   const [name, setName] = useState(defaultValue || "");
   const [error, setError] = useState("");
 
@@ -47,17 +47,21 @@ export default function NamePromptModal({ defaultValue, score, onSubmit, onSkip 
           </div>
           <div>
             <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-amber-300/80">
-              New High Score
+              {editMode ? "Leaderboard Name" : "New High Score"}
             </p>
-            <h2 className="text-lg font-semibold text-white">Name your runner</h2>
+            <h2 className="text-lg font-semibold text-white">
+              {editMode ? "Edit your name" : "Name your runner"}
+            </h2>
           </div>
         </div>
 
-        <p className="mt-2 text-sm text-white/50">
-          You reached{" "}
-          <span className="font-semibold text-white">Level {score?.level ?? 0}</span>{" "}
-          with a {score?.streak ?? 0}-level streak.
-        </p>
+        {!editMode && (
+          <p className="mt-2 text-sm text-white/50">
+            You reached{" "}
+            <span className="font-semibold text-white">Level {score?.level ?? 0}</span>{" "}
+            with a {score?.streak ?? 0}-level streak.
+          </p>
+        )}
 
         <Input
           value={name}

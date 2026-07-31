@@ -19,15 +19,36 @@ export function generateGoofyName() {
   return `${a}${n}${num}`;
 }
 
-// A modest blocklist of common profanity / slurs. Matched as substrings
-// against the alphanumeric-normalized input.
+// Blocklist of common profanity / slurs / hate terms. Matched as substrings
+// against a leetspeak-normalized (and character-collapsed) form of the input,
+// so common bypasses like "sh1t", "f@ck", "fuuuuck" are caught too.
 const BAD_WORDS = [
   "fuck", "shit", "bitch", "asshole", "bastard", "dick", "pussy",
   "cunt", "whore", "slut", "nigger", "nigga", "faggot", "retard",
   "cock", "douche", "wank", "twat", "prick", "bollock", "jackass",
+  "motherfucker", "jizz", "spic", "chink", "gook", "dyke", "tranny",
+  "pedo", "pedophile", "molest", "incest", "coomer", "thot", "skank",
 ];
 
+function normalize(text) {
+  return (text || "")
+    .toLowerCase()
+    .replace(/@/g, "a")
+    .replace(/\$/g, "s")
+    .replace(/\+/g, "t")
+    .replace(/0/g, "o")
+    .replace(/1/g, "i")
+    .replace(/3/g, "e")
+    .replace(/4/g, "a")
+    .replace(/5/g, "s")
+    .replace(/7/g, "t")
+    .replace(/8/g, "b")
+    .replace(/[^a-z0-9]/g, "");
+}
+
 export function containsProfanity(text) {
-  const t = (text || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-  return BAD_WORDS.some((w) => t.includes(w));
+  const t = normalize(text);
+  if (!t) return false;
+  const collapsed = t.replace(/(.)\1+/g, "$1");
+  return BAD_WORDS.some((w) => t.includes(w) || collapsed.includes(w));
 }

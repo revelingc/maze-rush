@@ -78,6 +78,21 @@ export function addHighScore(entry) {
   }
 }
 
+// Re-tags all of a player's existing leaderboard entries with a new name.
+export function renamePlayer(oldName, newName) {
+  if (!oldName || !newName || oldName === newName) return;
+  try {
+    const arr = loadHighScores();
+    let changed = false;
+    for (const s of arr) {
+      if (s.player_name === oldName) { s.player_name = newName; changed = true; }
+    }
+    if (changed) localStorage.setItem(SCORES_KEY, JSON.stringify(arr.slice(0, 50)));
+  } catch (e) {
+    /* ignore */
+  }
+}
+
 const TIMES_KEY = "mazerush_besttimes_v1";
 
 export function loadBestTimes() {

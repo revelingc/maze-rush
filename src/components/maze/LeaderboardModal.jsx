@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Trophy, X, Crown, Flame } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Trophy, X, Crown, Flame, Pencil } from "lucide-react";
 import { loadHighScores } from "@/lib/gameStorage";
+import { generateGoofyName } from "@/lib/nameUtils";
+import NamePromptModal from "@/components/maze/NamePromptModal";
 
-export default function LeaderboardModal({ onClose }) {
+export default function LeaderboardModal({ onClose, displayName, onRename }) {
   const [board, setBoard] = useState(null);
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     setBoard(loadHighScores());
@@ -26,13 +29,27 @@ export default function LeaderboardModal({ onClose }) {
         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
           <div className="flex items-center gap-2">
             <Trophy className="h-5 w-5 text-amber-300" />
-            <h2 className="text-base font-semibold text-white">Local Leaderboard</h2>
+            <h2 className="text-base font-semibold text-white">Leaderboard</h2>
           </div>
           <button
             onClick={onClose}
             className="rounded-full p-1.5 text-white/50 transition hover:bg-white/10 hover:text-white"
           >
             <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 border-b border-white/10 px-5 py-3">
+          <div className="min-w-0">
+            <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/40">Your name</p>
+            <p className="truncate text-sm font-semibold text-white">{displayName || "Anonymous runner"}</p>
+          </div>
+          <button
+            onClick={() => setEditing(true)}
+            className="flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-xs font-medium text-white/80 ring-1 ring-white/10 transition hover:bg-white/10 hover:text-white"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            Edit
           </button>
         </div>
 
@@ -82,6 +99,17 @@ export default function LeaderboardModal({ onClose }) {
             </ul>
           )}
         </div>
+
+        <AnimatePresence>
+          {editing && (
+            <NamePromptModal
+              editMode
+              defaultValue={displayName || ""}
+              onSubmit={(name) => { onRename?.(name); setEditing(false); }}
+              onSkip={() => { const g = generateGoofyName(); onRename?.(g); setEditing(false); }}
+            />
+          )}
+        </AnimatePresence>
       </motion.div>
     </motion.div>
   );
