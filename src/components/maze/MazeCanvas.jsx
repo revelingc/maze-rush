@@ -21,7 +21,7 @@ const VISIBLE_CELLS = 7; // cells shown across the viewport width
  *  - pointer: shared ref { active, ax, ay, x, y, maxR }
  *  - level, running, resetToken, onLevelComplete, onLifeLost
  */
-export default function MazeCanvas({ level, running, resetToken, onLevelComplete, onLifeLost, pointer, skinColor, skinStar, wallColor, bgColor, hazardColor, laserColor, hunterColor }) {
+export default function MazeCanvas({ level, running, resetToken, onLevelComplete, onLifeLost, pointer, skinColor, skinStar, wallColor, bgColor, hazardColor, laserColor, hunterColor, reducedMotion }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const stateRef = useRef(null);
@@ -152,6 +152,7 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       hazardColor: hazardColor || "#FB7185",
       laserColor: laserColor || "#22D3EE",
       hunterColor: hunterColor || "#A855F7",
+      reducedMotion: !!reducedMotion,
     };
 
     deadRef.current = false;
@@ -180,6 +181,11 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
+
+  useEffect(() => {
+    const st = stateRef.current;
+    if (st) st.reducedMotion = !!reducedMotion;
+  }, [reducedMotion]);
 
   useEffect(() => {
     const loop = (now) => {
@@ -277,9 +283,10 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
 
   updateCamera(st);
 
-  for (const h of hazards) updateHazard(h, dt, maze, cs);
-  for (const l of lasers) updateLaser(l, dt);
-  for (const hu of hunters) updateHunter(hu, dt, ball, maze, cs);
+  const odt = st.reducedMotion ? dt * 0.5 : dt;
+  for (const h of hazards) updateHazard(h, odt, maze, cs);
+  for (const l of lasers) updateLaser(l, odt);
+  for (const hu of hunters) updateHunter(hu, odt, ball, maze, cs);
 
   if (st.invuln > 0) st.invuln -= dt;
 

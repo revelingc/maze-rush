@@ -100,3 +100,33 @@ export function setBestTime(level, seconds) {
     return false;
   }
 }
+
+const SETTINGS_KEY = "mazerush_settings_v1";
+
+export function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (raw) {
+      const p = JSON.parse(raw);
+      const num = (v, d) => (Number.isFinite(v) ? v : d);
+      return {
+        hapticsEnabled: p.hapticsEnabled !== false,
+        vibrationAmount: num(p.vibrationAmount, 30),
+        colorblind: !!p.colorblind,
+        reducedMotion: !!p.reducedMotion,
+        account: p.account || null,
+      };
+    }
+  } catch (e) {
+    /* ignore */
+  }
+  return { hapticsEnabled: true, vibrationAmount: 30, colorblind: false, reducedMotion: false, account: null };
+}
+
+export function saveSettings(s) {
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+  } catch (e) {
+    /* ignore */
+  }
+}

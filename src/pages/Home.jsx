@@ -11,13 +11,14 @@ import ControlPad from "@/components/maze/ControlPad";
 import MainMenu from "@/components/maze/MainMenu";
 import CosmeticsScreen from "@/components/maze/CosmeticsScreen";
 import ObstacleIntroModal from "@/components/maze/ObstacleIntroModal";
-import { loadState, saveState, loadHighScores, addHighScore, loadBestTimes, setBestTime } from "@/lib/gameStorage";
+import { loadState, saveState, loadHighScores, addHighScore, loadBestTimes, setBestTime, loadSettings, saveSettings } from "@/lib/gameStorage";
 import { purchaseProduct } from "@/lib/nativePurchase";
 import { shareResult } from "@/lib/shareUtils";
 import { getLevelConfig, INTRO_LEVELS } from "@/lib/mazeGenerator";
 import { generateGoofyName } from "@/lib/nameUtils";
 import { getSkin } from "@/lib/skins";
 import StatsScreen from "@/components/maze/StatsScreen";
+import SettingsScreen from "@/components/maze/SettingsScreen";
 
 export default function Home() {
   const initial = loadState();
@@ -47,16 +48,23 @@ export default function Home() {
   const [buying, setBuying] = useState(false);
   const [bestTimes, setBestTimes] = useState(() => loadBestTimes());
   const [lastTime, setLastTime] = useState(null);
+  const [settings, setSettings] = useState(() => loadSettings());
 
   const livesRef = useRef(lives);
   livesRef.current = lives;
   const adFreeRef = useRef(adFree);
   adFreeRef.current = adFree;
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
   const pointer = useRef({ active: false, ax: 0, ay: 0, x: 0, y: 0, maxR: 70 });
 
   useEffect(() => {
     saveState({ level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, hazardColor, laserColor, hunterColor, starOwned, seenIntros, displayName, adFree });
   }, [level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned, seenIntros, adFree]);
+
+  useEffect(() => {
+    saveSettings(settings);
+  }, [settings]);
 
   useEffect(() => {
     if (level > bestLevel) setBestLevel(level);
@@ -112,7 +120,10 @@ export default function Home() {
   }, [streak, level]);
 
   const handleLifeLost = useCallback(() => {
-    if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(30);
+    const s = settingsRef.current;
+    if (s.hapticsEnabled && typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate(Math.max(10, Math.round(s.vibrationAmount)));
+    }
     if (adFreeRef.current) {
       // Ad-free players always have six lives — just retry the level.
       setResetToken((t) => t + 1);
@@ -229,8 +240,17 @@ export default function Home() {
     await shareResult({ level, streak, bestStreak });
   }, [level, streak, bestStreak]);
 
+  const handleAccount = useCallback((account) => {
+    setSettings((s) => ({ ...s, account }));
+    if (account?.name) setDisplayName(account.name);
+  }, []);
+
   const skinObj = getSkin(skin);
   const cfg = getLevelConfig(level);
+  const cb = settings.colorblind;
+  const effHazard = cb ? "#F0E442" : hazardColor;
+  const effLaser = cb ? "#0072B2" : laserColor;
+  const effHunter = cb ? "#D55E00" : hunterColor;
 
   if (screen === "menu") {
     return (
@@ -243,6 +263,7 @@ export default function Home() {
           onCosmetics={() => setScreen("cosmetics")}
           onBoard={() => setShowBoard(true)}
           onStats={() => setScreen("stats")}
+          onSettings={() => setScreen("settings")}
           adFree={adFree}
           onBuyAdFree={handleBuyAdFree}
         />
@@ -274,6 +295,17 @@ export default function Home() {
         starOwned={starOwned}
         onBuyStar={handleBuyStar}
         buying={buying}
+        onBack={() => setScreen("menu")}
+      />
+    );
+  }
+
+  if (screen === "settings") {
+    return (
+      <SettingsScreen
+        settings={settings}
+        setSettings={setSettings}
+        onAccount={handleAccount}
         onBack={() => setScreen("menu")}
       />
     );
@@ -319,9 +351,10 @@ export default function Home() {
               skinStar={!!skinObj.star}
               wallColor={wallColor}
               bgColor={bgColor}
-              hazardColor={hazardColor}
-              laserColor={laserColor}
-              hunterColor={hunterColor}
+              hazardColor={effHazard}
+              laserColor={effLaser}
+              hunterColor={effHunter}
+              reducedMotion={settings.reducedMotion}
             />
             <AnimatePresence>
               {modal === "levelcomplete" && (
