@@ -3,6 +3,9 @@
 export const DX = [0, 1, 0, -1]; // top, right, bottom, left
 export const DY = [-1, 0, 1, 0];
 
+// Levels that introduce a new obstacle (used for the intro overlay).
+export const INTRO_LEVELS = { 3: "hazards", 12: "lasers", 24: "hunters" };
+
 const DIRS = [
   { dx: 0, dy: -1, wall: 0, opp: 2 }, // top
   { dx: 1, dy: 0, wall: 1, opp: 3 }, // right
@@ -87,12 +90,18 @@ export function getLevelConfig(level) {
   const hazards = level >= 3 ? Math.min(12, Math.floor((level - 1) / 1.3)) : 0;
   const hazardSpeed = Math.min(240, 80 * d);
   const timer = Math.max(20, Math.round(58 / d));
+  const lasers = level >= 12 ? Math.min(2, Math.floor((level - 12) / 5) + 1) : 0;
+  const hunters = level >= 24 ? Math.min(2, Math.floor((level - 24) / 6) + 1) : 0;
+  const hunterSpeed = Math.min(150, 55 * d);
   return {
     level,
     cols: size,
     rows: size,
     hazards,
     hazardSpeed,
+    lasers,
+    hunters,
+    hunterSpeed,
     timer,
     difficulty: d,
     difficultyPct: Math.round((d - 1) * 100),
@@ -180,4 +189,60 @@ export function updateHazard(h, dt, maze, cs) {
     h.x += (dx / dist) * step;
     h.y += (dy / dist) * step;
   }
+}
+
+/**
+ * Returns the world-space segment a laser beam occupies.
+ */
+export function laserSegment(laser, cs) {
+  const x0 = laser.cx * cs;
+  const y0 = laser.cy * cs;
+  if (laser.orient === "h") return { ax: x0, ay: y0 + cs / 2, bx: x0 + cs, by: y0 + cs / 2 };
+  return { ax: x0 + cs / 2, ay: y0, bx: x0 + cs / 2, by: y0 + cs };
+}
+
+/**
+ * Advances a laser through its warn -> fire -> idle cycle.
+ */
+export function updateLaser(laser, dt) {
+  laser.t -= dt;
+  if (laser.t > 0) return;
+  if (laser.phase === "warn") { laser.phase = "fire"; laser.t = laser.fireTime; }
+  else if (laser.phase === "fire") { laser.phase = "idle"; laser.t = laser.idleTime; }
+  else { laser.phase = "warn"; laser.t = laser.warnTime; }
+}
+
+/**
+ * Distance from a point to a segment.
+ */
+export function pointSegDist(px, py, ax, ay, bx, by) {
+  const dx = bx - ax;
+  const dy = by - ay;
+  const len2 = dx * dx + dy * dy || 1;
+  let t = ((px - ax) * dx + (py - ay) * dy) / len2;
+  t = Math.max(0, Math.min(1, t));
+  const cx = ax + t * dx;
+  const cy = ay + t * dy;
+  return Math.hypot(px - cx, py - cy);
+}
+
+/**
+ * A hunter homes toward the ball, sliding along the corridors (can't pass walls).
+ */
+export function updateHunter(hunter, dt, ball, maze, cs) {
+  const dx = ball.x - hunter.x;
+  const dy = ball.y - hunter.y;
+  const dist = Math.hypot(dx, dy) || 1;
+  const tx = (dx / dist) * hunter.speed;
+  const ty = (dy / dist) * hunter.speed;
+  const k = Math.min(1, dt * 2.5);
+  hunter.vx += (tx - hunter.vx) * k;
+  hunter.vy += (ty - hunter.vy) * k;
+  hunter.x += hunter.vx * dt;
+  hunter.y += hunter.vy * dt;
+  for (let r = 0; r < 3; r++) resolveCollisions(hunter, maze, cs);
+  const W = maze.cols * cs;
+  const H = maze.rows * cs;
+  hunter.x = Math.max(hunter.r, Math.min(W - hunter.r, hunter.x));
+  hunter.y = Math.max(hunter.r, Math.min(H - hunter.r, hunter.y));
 }

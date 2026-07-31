@@ -1,6 +1,8 @@
 // Canvas renderer for Maze Rush (scrolling world). The joystick lives in a
 // separate DOM control pad below the maze, so nothing is drawn over the map.
 
+import { laserSegment } from "@/lib/mazeGenerator";
+
 function drawStar(ctx, cx, cy, r, now) {
   const rot = now / 600;
   const spikes = 5;
@@ -62,7 +64,7 @@ function edgePoint(ang, w, h, margin) {
 
 export function renderGame(ctx, st) {
   const {
-    maze, cs, ball, hazards, exitX, exitY,
+    maze, cs, ball, hazards, lasers, hunters, exitX, exitY,
     timer, timerMax, invuln, w, h, camX, camY, worldW, worldH,
   } = st;
   const now = performance.now();
@@ -118,6 +120,61 @@ export function renderGame(ctx, st) {
     ctx.beginPath();
     ctx.arc(hz.x, hz.y, hz.r, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
+  }
+
+  // lasers
+  for (const l of lasers) {
+    const seg = laserSegment(l, cs);
+    if (l.phase === "fire") {
+      ctx.save();
+      ctx.shadowBlur = 14;
+      ctx.shadowColor = "#22D3EE";
+      ctx.strokeStyle = "#22D3EE";
+      ctx.lineWidth = Math.max(3, cs * 0.12);
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(seg.ax, seg.ay);
+      ctx.lineTo(seg.bx, seg.by);
+      ctx.stroke();
+      ctx.restore();
+    } else if (l.phase === "warn") {
+      ctx.save();
+      ctx.strokeStyle = "rgba(34,211,238,0.5)";
+      ctx.lineWidth = Math.max(2, cs * 0.08);
+      ctx.setLineDash([cs * 0.14, cs * 0.14]);
+      ctx.beginPath();
+      ctx.moveTo(seg.ax, seg.ay);
+      ctx.lineTo(seg.bx, seg.by);
+      ctx.stroke();
+      ctx.restore();
+    }
+    // emitter marker
+    ctx.save();
+    ctx.fillStyle = l.phase === "fire" ? "#22D3EE" : "rgba(34,211,238,0.7)";
+    ctx.beginPath();
+    ctx.arc(seg.ax, seg.ay, Math.max(2, cs * 0.08), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // hunters (homing)
+  const hpulse = 0.5 + 0.5 * Math.sin(now / 180);
+  for (const hu of hunters) {
+    ctx.save();
+    ctx.shadowBlur = 16;
+    ctx.shadowColor = "#A855F7";
+    ctx.fillStyle = "#A855F7";
+    ctx.beginPath();
+    ctx.arc(hu.x, hu.y, hu.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.save();
+    ctx.strokeStyle = `rgba(168,85,247,${0.35 + 0.4 * hpulse})`;
+    ctx.lineWidth = Math.max(1.5, cs * 0.04);
+    ctx.beginPath();
+    ctx.arc(hu.x, hu.y, hu.r + cs * 0.12 + cs * 0.05 * hpulse, 0, Math.PI * 2);
+    ctx.stroke();
     ctx.restore();
   }
 

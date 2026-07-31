@@ -11,8 +11,9 @@ import NamePromptModal from "@/components/maze/NamePromptModal";
 import ControlPad from "@/components/maze/ControlPad";
 import MainMenu from "@/components/maze/MainMenu";
 import CosmeticsScreen from "@/components/maze/CosmeticsScreen";
+import ObstacleIntroModal from "@/components/maze/ObstacleIntroModal";
 import { loadState, saveState } from "@/lib/gameStorage";
-import { getLevelConfig } from "@/lib/mazeGenerator";
+import { getLevelConfig, INTRO_LEVELS } from "@/lib/mazeGenerator";
 import { generateGoofyName } from "@/lib/nameUtils";
 import { getSkin } from "@/lib/skins";
 
@@ -28,7 +29,8 @@ export default function Home() {
   const [wallColor, setWallColor] = useState(initial.wallColor || "#39496B");
   const [bgColor, setBgColor] = useState(initial.bgColor || "#0B0F1A");
   const [starOwned, setStarOwned] = useState(!!initial.starOwned);
-  const [buying, setBuying] = useState(false);
+  const [seenIntros, setSeenIntros] = useState(initial.seenIntros || []);
+  const [intro, setIntro] = useState(null);
   const [running, setRunning] = useState(true);
   const [resetToken, setResetToken] = useState(0);
   const [modal, setModal] = useState(null);
@@ -44,21 +46,37 @@ export default function Home() {
   const pointer = useRef({ active: false, ax: 0, ay: 0, x: 0, y: 0, maxR: 70 });
 
   useEffect(() => {
-    base44.auth.me().then((me) => {
+    base44.auth.me().then(async (me) => {
       setMyId(me.id);
       const name = me.full_name || (me.email || "").split("@")[0] || "";
       setMyName(name);
-      if (me.star_skin_owned) setStarOwned(true);
+      // Verify Shooting Star ownership from paid purchase records (server-authoritative).
+      try {
+        const paid = await base44.entities.Base44Purchase.filter({
+          appUserId: me.id, productId: "star", status: "paid",
+        });
+        if (paid && paid.length) setStarOwned(true);
+      } catch (e) { /* ignore */ }
     }).catch(() => {});
   }, []);
 
   useEffect(() => {
-    saveState({ level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned });
-  }, [level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned]);
+    saveState({ level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned, seenIntros });
+  }, [level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned, seenIntros]);
 
   useEffect(() => {
     if (level > bestLevel) setBestLevel(level);
   }, [level, bestLevel]);
+
+  // Show a one-time intro overlay when entering a level that debuts an obstacle.
+  useEffect(() => {
+    if (screen !== "play") return;
+    const key = INTRO_LEVELS[level];
+    if (key && !seenIntros.includes(key)) {
+      setIntro(key);
+      setRunning(false);
+    }
+  }, [screen, level, seenIntros]);
 
   const checkQualifies = useCallback(async (reachedLevel, streakVal) => {
     try {
@@ -193,22 +211,19 @@ export default function Home() {
     setAd(null);
   };
 
+  const dismissIntro = () => {
+    setSeenIntros((s) => (s.includes(intro) ? s : [...s, intro]));
+    setIntro(null);
+    setRunning(true);
+  };
+
   const handleBuyStar = async () => {
-    if (buying) return;
-    setBuying(true);
     try {
-      const res = await base44.functions.invoke("create-checkout", { productId: "star_skin" });
-      const redirectUrl = res?.data?.redirectUrl;
-      if (redirectUrl) {
-        window.location.href = redirectUrl;
-      } else {
-        alert("Could not start checkout. Please try again.");
-      }
+      const res = await base44.functions.invoke("create-checkout", { productId: "star" });
+      const url = res?.data?.redirectUrl;
+      if (url) window.location.href = url;
     } catch (e) {
-      console.error("create-checkout failed", e);
-      alert("Could not start checkout. Please try again.");
-    } finally {
-      setBuying(false);
+      /* ignore — stays on cosmetics screen */
     }
   };
 
@@ -247,7 +262,6 @@ export default function Home() {
         setBgColor={setBgColor}
         starOwned={starOwned}
         onBuyStar={handleBuyStar}
-        buying={buying}
         onBack={() => setScreen("menu")}
       />
     );
@@ -298,6 +312,9 @@ export default function Home() {
                 <GameOverModal level={level} onWatchAd={watchAd} onRestart={restart} />
               )}
               {ad && <AdOverlay type={ad} onComplete={onAdComplete} />}
+              {intro && (
+                <ObstacleIntroModal obstacleKey={intro} onContinue={dismissIntro} />
+              )}
               {showBoard && (
                 <LeaderboardModal myId={myId} onClose={() => setShowBoard(false)} />
               )}

@@ -17,6 +17,7 @@ export function loadState() {
         wallColor: str(p.wallColor, "#39496B"),
         bgColor: str(p.bgColor, "#0B0F1A"),
         starOwned: !!p.starOwned,
+        seenIntros: Array.isArray(p.seenIntros) ? p.seenIntros : [],
       };
     }
   } catch (e) {
@@ -25,7 +26,7 @@ export function loadState() {
   return {
     level: 1, lives: 3, streak: 0, bestStreak: 0, bestLevel: 1,
     skin: "default", wallColor: "#39496B", bgColor: "#0B0F1A",
-    starOwned: false,
+    starOwned: false, seenIntros: [],
   };
 }
 

@@ -74,23 +74,24 @@ Deno.serve(async (req: Request) => {
     // product identifier; look up the authoritative price here (a Product entity, a config map,
     // etc.). For a subscription, set `subscriptionInfo` (frequency/interval/billingCycles).
     const productId = String(body.productId ?? "");
-    // Fixed-entitlement cosmetic — always quantity 1.
+    // Fixed-entitlement cosmetics: always a single unit.
     const quantity = 1;
-    // Authoritative product catalog (server-side, tamper-proof). The client sends only the
-    // productId; the price/name are resolved here so a buyer can't pay a different amount.
+    // Trusted product catalog resolved SERVER-SIDE — the client only sends the id, never the price.
     const PRODUCTS: Record<string, { name: string; price: string; currency: string }> = {
-      star_skin: { name: "Shooting Star Ball Skin", price: "1.99", currency: "USD" },
+      star: { name: "Shooting Star Ball Skin", price: "1.99", currency: "USD" },
     };
     const product = PRODUCTS[productId];
     if (!product) {
       return new Response(JSON.stringify({ error: "Unknown product" }), { status: 400 });
     }
     const productName = product.name;
-    const price = product.price;
+    const price = product.price; // authoritative per-unit price (major units)
     const currency = product.currency;
-    // One-time payment (not a subscription).
+    // One-time purchase (no subscription).
     const subscriptionInfo = null;
-    // Where Wix returns the buyer. Both MUST be real, PUBLICLY reachable routes in this app.
+    // Where Wix returns the buyer. Both MUST be real, PUBLICLY reachable routes in this app: the
+    // returning buyer is often anonymous, so a missing or login-gated route strands a paid customer.
+    // Match your router exactly — `/ThankYou`, not `/thank-you`.
     const thankYouPath = "/ThankYou";
     const postFlowPath = "/";
     // ===== END APP-SPECIFIC =====

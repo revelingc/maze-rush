@@ -4,6 +4,10 @@ import {
   getLevelConfig,
   resolveCollisions,
   updateHazard,
+  updateLaser,
+  updateHunter,
+  laserSegment,
+  pointSegDist,
 } from "@/lib/mazeGenerator";
 import { renderGame } from "@/lib/mazeRenderer";
 
@@ -89,8 +93,54 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       });
     }
 
+    // lasers (capped at 2 per map, levels 12+)
+    const lasers = [];
+    for (let i = 0; i < cfg.lasers; i++) {
+      let cx, cy, key, tries = 0;
+      do {
+        cx = Math.floor(Math.random() * cfg.cols);
+        cy = Math.floor(Math.random() * cfg.rows);
+        key = cy * cfg.cols + cx;
+        tries++;
+      } while ((used.has(key) || (cx <= 2 && cy <= 2)) && tries < 80);
+      used.add(key);
+      lasers.push({
+        cx,
+        cy,
+        orient: Math.random() < 0.5 ? "h" : "v",
+        phase: "idle",
+        t: 0.5 + Math.random() * 2.5,
+        warnTime: 0.9,
+        fireTime: 0.5,
+        idleTime: 2.2,
+      });
+    }
+
+    // hunters (surprise obstacle, levels 24+)
+    const hunters = [];
+    for (let i = 0; i < cfg.hunters; i++) {
+      const halfX = Math.floor(cfg.cols * 0.5);
+      const halfY = Math.floor(cfg.rows * 0.5);
+      let cx, cy, key, tries = 0;
+      do {
+        cx = halfX + Math.floor(Math.random() * Math.max(1, cfg.cols - halfX));
+        cy = halfY + Math.floor(Math.random() * Math.max(1, cfg.rows - halfY));
+        key = cy * cfg.cols + cx;
+        tries++;
+      } while (used.has(key) && tries < 40);
+      used.add(key);
+      hunters.push({
+        x: cx * cs + cs / 2,
+        y: cy * cs + cs / 2,
+        r: cs * 0.28,
+        vx: 0,
+        vy: 0,
+        speed: cfg.hunterSpeed,
+      });
+    }
+
     stateRef.current = {
-      maze, cs, ball, hazards,
+      maze, cs, ball, hazards, lasers, hunters,
       exitX: (cfg.cols - 1) * cs + cs / 2,
       exitY: (cfg.rows - 1) * cs + cs / 2,
       timer: cfg.timer, timerMax: cfg.timer, invuln: 1.0, moved: false,
@@ -121,6 +171,7 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       st.ball.x *= ratio; st.ball.y *= ratio; st.ball.r = newCs * 0.3;
       st.exitX *= ratio; st.exitY *= ratio;
       for (const hz of st.hazards) { hz.x *= ratio; hz.y *= ratio; hz.r = newCs * 0.27; }
+      for (const hu of st.hunters) { hu.x *= ratio; hu.y *= ratio; hu.r = newCs * 0.28; }
       st.ctx = ctx;
     };
     window.addEventListener("resize", onResize);
@@ -165,8 +216,20 @@ function updateCamera(st) {
   st.camY = clamp(ball.y - h / 2, loY, hiY);
 }
 
+function killPlayer(st, pointer, deadRef, cbRef) {
+  const { cs, ball } = st;
+  st.invuln = 1.5;
+  ball.x = cs / 2;
+  ball.y = cs / 2;
+  ball.vx = 0;
+  ball.vy = 0;
+  pointer.current.active = false;
+  deadRef.current = true;
+  cbRef.current.onLifeLost();
+}
+
 function updateGame(st, dt, pointer, deadRef, cbRef) {
-  const { ball, cs, maze, hazards, cfg } = st;
+  const { ball, cs, maze, hazards, lasers, hunters, cfg } = st;
   const maxSpeed = cs * 11;
   const maxR = (pointer && pointer.current.maxR) || 70;
 
@@ -194,14 +257,7 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
   st.timer -= dt;
   if (st.timer <= 0) {
     st.timer = cfg.timer;
-    st.invuln = 1.2;
-    ball.x = cs / 2;
-    ball.y = cs / 2;
-    ball.vx = 0;
-    ball.vy = 0;
-    pointer.current.active = false;
-    deadRef.current = true;
-    cbRef.current.onLifeLost();
+    killPlayer(st, pointer, deadRef, cbRef);
     return;
   }
 
@@ -219,20 +275,33 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
   updateCamera(st);
 
   for (const h of hazards) updateHazard(h, dt, maze, cs);
+  for (const l of lasers) updateLaser(l, dt);
+  for (const hu of hunters) updateHunter(hu, dt, ball, maze, cs);
 
   if (st.invuln > 0) st.invuln -= dt;
 
   if (st.invuln <= 0 && st.moved) {
+    // hazards
     for (const h of hazards) {
       if (Math.hypot(h.x - ball.x, h.y - ball.y) < h.r + ball.r) {
-        st.invuln = 1.5;
-        ball.x = cs / 2;
-        ball.y = cs / 2;
-        ball.vx = 0;
-        ball.vy = 0;
-        pointer.current.active = false;
-        deadRef.current = true;
-        cbRef.current.onLifeLost();
+        killPlayer(st, pointer, deadRef, cbRef);
+        return;
+      }
+    }
+    // lasers (only while firing)
+    const beamHalf = cs * 0.06;
+    for (const l of lasers) {
+      if (l.phase !== "fire") continue;
+      const seg = laserSegment(l, cs);
+      if (pointSegDist(ball.x, ball.y, seg.ax, seg.ay, seg.bx, seg.by) < ball.r + beamHalf) {
+        killPlayer(st, pointer, deadRef, cbRef);
+        return;
+      }
+    }
+    // hunters
+    for (const hu of hunters) {
+      if (Math.hypot(hu.x - ball.x, hu.y - ball.y) < hu.r + ball.r) {
+        killPlayer(st, pointer, deadRef, cbRef);
         return;
       }
     }

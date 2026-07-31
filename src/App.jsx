@@ -8,11 +8,11 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 // Add page imports here
 import Home from '@/pages/Home';
+import ThankYou from '@/pages/ThankYou';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
-import ThankYou from '@/pages/ThankYou';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { Navigate } from 'react-router-dom';
 
