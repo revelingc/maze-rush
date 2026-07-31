@@ -26,7 +26,7 @@ export default function MainMenu({ bestLevel, bestStreak, skinObj, onPlay, onCos
         </div>
 
         <div className="flex flex-col items-center gap-1.5">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-white/30">Current Ball</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-white/30">Current Dot</p>
           <DotPreview skin={skinObj} size={36} />
         </div>
 
