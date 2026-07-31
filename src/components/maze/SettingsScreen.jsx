@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Vibrate, Eye, Cloud, Check, Smartphone, LogOut, Trash2, Joystick, RefreshCw } from "lucide-react";
+import { ArrowLeft, Vibrate, Eye, Cloud, Check, Smartphone, LogOut, Trash2, Joystick } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { signIn as nativeSignIn, signOut as nativeSignOut, detectPlatform } from "@/lib/nativeAccount";
@@ -17,7 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export default function SettingsScreen({ settings, setSettings, onAccount, onResetPurchases, onBack }) {
+export default function SettingsScreen({ settings, setSettings, onAccount, onBack }) {
   const [connecting, setConnecting] = useState(false);
   const [msg, setMsg] = useState(null);
   const platform = detectPlatform();
@@ -223,25 +223,6 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onRes
               {msg && <p className="mt-3 text-xs text-amber-600">{msg}</p>}
             </div>
           )}
-        </Section>
-
-        {/* Reset purchases — always available */}
-        <Section
-          icon={<RefreshCw className="h-4 w-4 text-slate-500" />}
-          title="Reset purchases"
-          subtitle="Clear cosmetic & ad-free unlocks"
-        >
-          <div className="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
-            <p className="text-xs text-slate-500">
-              Removes ad-free status, unlocked trails, and the Shooting Star skin. Your level progress, streaks, and scores stay intact.
-            </p>
-            <button
-              onClick={onResetPurchases}
-              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-300"
-            >
-              <RefreshCw className="h-3.5 w-3.5" /> Reset purchases
-            </button>
-          </div>
         </Section>
 
         {/* Danger zone — account deletion (authenticated users only) */}
