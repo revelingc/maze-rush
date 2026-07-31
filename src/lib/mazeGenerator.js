@@ -247,7 +247,7 @@ export function pointSegDist(px, py, ax, ay, bx, by) {
 }
 
 /**
- * A hunter homes toward the ball, sliding along the corridors (can't pass walls).
+ * A hunter homes toward the ball, flying straight through walls.
  */
 export function updateHunter(hunter, dt, ball, maze, cs) {
   const dx = ball.x - hunter.x;
@@ -260,7 +260,6 @@ export function updateHunter(hunter, dt, ball, maze, cs) {
   hunter.vy += (ty - hunter.vy) * k;
   hunter.x += hunter.vx * dt;
   hunter.y += hunter.vy * dt;
-  for (let r = 0; r < 3; r++) resolveCollisions(hunter, maze, cs);
   const W = maze.cols * cs;
   const H = maze.rows * cs;
   hunter.x = Math.max(hunter.r, Math.min(W - hunter.r, hunter.x));
