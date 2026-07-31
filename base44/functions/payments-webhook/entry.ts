@@ -145,7 +145,7 @@ async function handleOrderApproved(db: any, eventData: any): Promise<Response> {
   // record. Idempotent: a repeated ORDER_APPROVED just sets the same value again. The client
   // reads this flag via base44.auth.me() to unlock the cosmetic. Never gate on is_verified
   // (platform-protected); star_skin_owned is a field the webhook owns.
-  if (purchase.appUserId && purchase.productId === "star_skin") {
+  if (purchase.appUserId && purchase.productId === "star") {
     await db.entities.User.update(purchase.appUserId, { star_skin_owned: true });
   }
   // ===== END APP-SPECIFIC =====
