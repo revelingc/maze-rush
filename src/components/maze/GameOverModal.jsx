@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Skull, Film, Sparkles, RotateCcw, Share2 } from "lucide-react";
+import { Skull, Film, RotateCcw, Share2 } from "lucide-react";
 
 export default function GameOverModal({ level, streak, onWatchAd, onRestart, onShare }) {
   return (
@@ -28,16 +28,6 @@ export default function GameOverModal({ level, streak, onWatchAd, onRestart, onS
               <span className="text-sm font-medium text-white">Watch ad</span>
             </span>
             <span className="text-sm font-semibold text-sky-300">+3 lives</span>
-          </button>
-          <button
-            onClick={() => onWatchAd("premium")}
-            className="flex w-full items-center justify-between rounded-xl bg-white/5 px-4 py-3.5 text-left ring-1 ring-white/10 transition hover:bg-white/10 active:scale-[0.98]"
-          >
-            <span className="flex items-center gap-3">
-              <Sparkles className="h-4 w-4 text-fuchsia-300" />
-              <span className="text-sm font-medium text-white">Watch premium ad</span>
-            </span>
-            <span className="text-sm font-semibold text-fuchsia-300">+6 lives</span>
           </button>
           <button
             onClick={onShare}
