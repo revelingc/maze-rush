@@ -134,6 +134,7 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       if (runningRef.current && !deadRef.current) {
         updateGame(st, dt, pointer, deadRef, cbRef);
       }
+      st.pointer = pointer.current;
       renderGame(st.ctx, st);
     };
     rafRef.current = requestAnimationFrame(loop);
