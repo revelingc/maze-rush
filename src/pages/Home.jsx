@@ -186,8 +186,10 @@ export default function Home() {
 
   const onAdComplete = () => {
     const gain = ad === "premium" ? 6 : 3;
-    setLives((prev) => Math.min(6, prev + gain));
     setAd(null);
+    setLevel(1);
+    setStreak(0);
+    setLives(gain);
     setRunning(true);
     setResetToken((t) => t + 1);
   };
@@ -252,6 +254,9 @@ export default function Home() {
       if (res?.ok) {
         setAdFree(true);
         setLives(6);
+        setLevel(1);
+        setStreak(0);
+        setResetToken((t) => t + 1);
       } else if (res?.reason === "unavailable") {
         alert("In-app purchases are available in the installed app.");
       }
