@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Vibrate, Eye, Cloud, Check, Smartphone, LogOut } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { signIn as nativeSignIn, signOut as nativeSignOut, detectPlatform } from "@/lib/nativeAccount";
 
@@ -57,9 +57,10 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
         {/* Haptics */}
         <Section icon={<Vibrate className="h-4 w-4 text-rose-300" />} title="Haptics" subtitle="Vibration on death">
           <Row label="Haptic feedback">
-            <Switch
+            <Checkbox
               checked={settings.hapticsEnabled}
-              onCheckedChange={(v) => update({ hapticsEnabled: v })}
+              onCheckedChange={(v) => update({ hapticsEnabled: !!v })}
+              className="h-5 w-5"
             />
           </Row>
           <div className={settings.hapticsEnabled ? "" : "opacity-40 pointer-events-none"}>
@@ -88,15 +89,17 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
         {/* Accessibility */}
         <Section icon={<Eye className="h-4 w-4 text-sky-300" />} title="Accessibility" subtitle="Visual clarity">
           <Row label="Colorblind / high contrast" hint="Uses colorblind-safe hazard colors">
-            <Switch
+            <Checkbox
               checked={settings.colorblind}
-              onCheckedChange={(v) => update({ colorblind: v })}
+              onCheckedChange={(v) => update({ colorblind: !!v })}
+              className="h-5 w-5"
             />
           </Row>
           <Row label="Reduced motion" hint="Slows obstacles for a calmer run">
-            <Switch
+            <Checkbox
               checked={settings.reducedMotion}
-              onCheckedChange={(v) => update({ reducedMotion: v })}
+              onCheckedChange={(v) => update({ reducedMotion: !!v })}
+              className="h-5 w-5"
             />
           </Row>
         </Section>
