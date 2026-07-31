@@ -3,17 +3,17 @@
 // Shooting Star purchase (price 0, unlocked via starOwned).
 
 export const TRAILS = [
-  { id: "bubbles",  name: "Bubbles",  skinId: "default", color: "#5EEAD4", price: 0.99, style: "bubble" },
-  { id: "mist",     name: "Mist",     skinId: "sky",     color: "#38BDF8", price: 0.99, style: "puff" },
-  { id: "sparkle",  name: "Sparkle",  skinId: "violet",  color: "#A78BFA", price: 0.99, style: "sparkle" },
-  { id: "petals",   name: "Petals",   skinId: "rose",    color: "#FB7185", price: 0.99, style: "petal" },
-  { id: "embers",  name: "Embers",   skinId: "amber",   color: "#FBBF24", price: 0.99, style: "ember" },
-  { id: "leaves",  name: "Leaves",   skinId: "emerald", color: "#34D399", price: 0.99, style: "leaf" },
-  { id: "hearts",  name: "Hearts",   skinId: "pink",    color: "#F472B6", price: 0.99, style: "heart" },
-  { id: "pixels",  name: "Pixels",   skinId: "lime",   color: "#A3E635", price: 0.99, style: "pixel" },
-  { id: "flames",  name: "Flames",   skinId: "orange",  color: "#FB923C", price: 0.99, style: "flame" },
-  { id: "galaxy",  name: "Galaxy",   skinId: "indigo", color: "#818CF8", price: 0.99, style: "galaxy" },
-  { id: "stardust", name: "Stardust", skinId: "star",  color: "#FDE68A", price: 0,    style: "stardust", star: true },
+  { id: "bubbles",  name: "Bubbles",  skinId: "default", color: "#5EEAD4", price: 0.99, style: "bubble",   desc: "Translucent bubbles rise and pop behind your dot." },
+  { id: "mist",     name: "Mist",     skinId: "sky",     color: "#38BDF8", price: 0.99, style: "puff",     desc: "A soft, drifting cloud of misty puffs." },
+  { id: "sparkle",  name: "Sparkle",  skinId: "violet",  color: "#A78BFA", price: 0.99, style: "sparkle",  desc: "Shimmering glitter that twinkles and fades." },
+  { id: "petals",   name: "Petals",   skinId: "rose",    color: "#FB7185", price: 0.99, style: "petal",    desc: "Delicate flower petals drift down in your wake." },
+  { id: "embers",   name: "Embers",   skinId: "amber",   color: "#FBBF24", price: 0.99, style: "ember",    desc: "Glowing embers float upward like a dying fire." },
+  { id: "leaves",   name: "Leaves",   skinId: "emerald", color: "#34D399", price: 0.99, style: "leaf",     desc: "Autumn leaves flutter and spin behind you." },
+  { id: "hearts",   name: "Hearts",   skinId: "pink",    color: "#F472B6", price: 0.99, style: "heart",    desc: "Tiny floating hearts trail your every move." },
+  { id: "pixels",   name: "Pixels",   skinId: "lime",    color: "#A3E635", price: 0.99, style: "pixel",    desc: "Blocky 8-bit pixels stack up behind your dot." },
+  { id: "flames",   name: "Flames",   skinId: "orange",  color: "#FB923C", price: 0.99, style: "flame",    desc: "Flickering flame tongues lick up from your path." },
+  { id: "galaxy",   name: "Galaxy",   skinId: "indigo",  color: "#818CF8", price: 0.99, style: "galaxy",   desc: "Swirling star fragments from a distant galaxy." },
+  { id: "stardust", name: "Stardust", skinId: "star",    color: "#FDE68A", price: 0,    style: "stardust", desc: "A golden shower of stardust. Bundled with Shooting Star.", star: true },
 ];
 
 export const getTrail = (id) => TRAILS.find((t) => t.id === id) || null;
@@ -35,6 +35,7 @@ function emitParticle(st, x, y) {
     y: y + R() * cs * 0.18,
     rot: Math.random() * Math.PI * 2,
     vr: R() * 5,
+    tw: Math.random() * Math.PI * 2,
     color,
   };
   let p;
@@ -46,25 +47,25 @@ function emitParticle(st, x, y) {
       p = { ...base, vx: R() * 3, vy: R() * 3, life: 0.8, maxLife: 0.8, size: cs * 0.16, shape: "circle", grow: true };
       break;
     case "sparkle":
-      p = { ...base, vx: R() * 9, vy: R() * 9, life: 0.5, maxLife: 0.5, size: cs * 0.1, shape: "star4" };
+      p = { ...base, vx: R() * 9, vy: R() * 9, life: 0.5, maxLife: 0.5, size: cs * 0.08, shape: "glitter" };
       break;
     case "petal":
-      p = { ...base, vx: R() * 5, vy: 9 + R() * 4, life: 0.9, maxLife: 0.9, size: cs * 0.12, shape: "diamond" };
+      p = { ...base, vx: R() * 6, vy: 9 + R() * 5, life: 0.9, maxLife: 0.9, size: cs * 0.14, shape: "petal", vr: R() * 8 };
       break;
     case "ember":
       p = { ...base, vx: R() * 6, vy: -12 - Math.random() * 8, life: 0.7, maxLife: 0.7, size: cs * 0.09, shape: "circle" };
       break;
     case "leaf":
-      p = { ...base, vx: R() * 12, vy: 7 + R() * 5, life: 0.9, maxLife: 0.9, size: cs * 0.14, shape: "leaf" };
+      p = { ...base, vx: R() * 12, vy: 7 + R() * 5, life: 0.9, maxLife: 0.9, size: cs * 0.15, shape: "leaf", vr: R() * 9 };
       break;
     case "heart":
-      p = { ...base, vx: R() * 5, vy: 5 + R() * 4, life: 0.8, maxLife: 0.8, size: cs * 0.1, shape: "heart" };
+      p = { ...base, vx: R() * 5, vy: 5 + R() * 4, life: 0.8, maxLife: 0.8, size: cs * 0.13, shape: "heart", vr: R() * 3 };
       break;
     case "pixel":
-      p = { ...base, vx: R() * 3, vy: R() * 3, life: 0.5, maxLife: 0.5, size: cs * 0.1, shape: "square" };
+      p = { ...base, vx: R() * 3, vy: R() * 3, life: 0.5, maxLife: 0.5, size: cs * 0.11, shape: "square", rot: 0, vr: 0 };
       break;
     case "flame":
-      p = { ...base, vx: R() * 7, vy: -14 - Math.random() * 6, life: 0.5, maxLife: 0.5, size: cs * 0.11, shape: "flame" };
+      p = { ...base, vx: R() * 7, vy: -14 - Math.random() * 6, life: 0.5, maxLife: 0.5, size: cs * 0.11, shape: "flame", vr: R() * 3 };
       break;
     case "galaxy":
       p = { ...base, vx: R() * 14, vy: R() * 14, life: 0.6, maxLife: 0.6, size: cs * 0.07, shape: "star4" };
@@ -95,7 +96,10 @@ export function updateTrail(st, dt) {
   const ball = st.ball;
   const sp = Math.hypot(ball.vx, ball.vy);
   if (sp < 8 || !st.moved) return;
-  const n = st.trailStyle === "stardust" ? 3 : (st.trailStyle === "sparkle" || st.trailStyle === "galaxy" ? 2 : 1);
+  const n =
+    st.trailStyle === "stardust" || st.trailStyle === "sparkle" ? 3
+    : st.trailStyle === "galaxy" ? 2
+    : 1;
   for (let i = 0; i < n; i++) emitParticle(st, ball.x, ball.y);
 }
 
@@ -116,13 +120,64 @@ function drawSpark(ctx, cx, cy, r, rot) {
   ctx.restore();
 }
 
-function drawHeart(ctx, cx, cy, s) {
+// Glitter: a sharp 4-point sparkle with a bright white, twinkling core.
+function drawGlitter(ctx, p) {
+  const lr = 1 - p.life / p.maxLife;
+  const tw = 1 + 0.4 * Math.sin(p.tw + lr * 12);
+  const r = p.size * (1 - lr * 0.3) * tw;
   ctx.save();
-  ctx.translate(cx, cy);
+  ctx.translate(p.x, p.y);
+  ctx.rotate(p.rot);
+  ctx.beginPath();
+  ctx.moveTo(0, -r * 1.7);
+  ctx.lineTo(r * 0.22, -r * 0.22);
+  ctx.lineTo(r * 1.7, 0);
+  ctx.lineTo(r * 0.22, r * 0.22);
+  ctx.lineTo(0, r * 1.7);
+  ctx.lineTo(-r * 0.22, r * 0.22);
+  ctx.lineTo(-r * 1.7, 0);
+  ctx.lineTo(-r * 0.22, -r * 0.22);
+  ctx.closePath();
+  ctx.fill();
+  // bright white core
+  const prev = ctx.globalAlpha;
+  ctx.globalAlpha = Math.min(1, prev * 0.95);
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(0, 0, r * 0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = prev;
+  ctx.restore();
+}
+
+// A classic heart, point down.
+function drawHeart(ctx, p) {
+  const lr = 1 - p.life / p.maxLife;
+  const s = p.size * (1 - lr * 0.2);
+  ctx.save();
+  ctx.translate(p.x, p.y);
   ctx.beginPath();
   ctx.moveTo(0, s * 0.3);
-  ctx.bezierCurveTo(s * 0.6, -s * 0.5, s * 1.0, s * 0.2, 0, s * 0.85);
-  ctx.bezierCurveTo(-s * 1.0, s * 0.2, -s * 0.6, -s * 0.5, 0, s * 0.3);
+  ctx.bezierCurveTo(0, -s * 0.1, -s, -s * 0.1, -s, s * 0.25);
+  ctx.bezierCurveTo(-s, s * 0.55, 0, s * 0.75, 0, s);
+  ctx.bezierCurveTo(0, s * 0.75, s, s * 0.55, s, s * 0.25);
+  ctx.bezierCurveTo(s, -s * 0.1, 0, -s * 0.1, 0, s * 0.3);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+// A teardrop flower petal.
+function drawPetal(ctx, p) {
+  const lr = 1 - p.life / p.maxLife;
+  const s = p.size * (1 - lr * 0.2);
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.rotate(p.rot);
+  ctx.beginPath();
+  ctx.moveTo(0, -s);
+  ctx.bezierCurveTo(s * 0.7, -s * 0.5, s * 0.7, s * 0.6, 0, s);
+  ctx.bezierCurveTo(-s * 0.7, s * 0.6, -s * 0.7, -s * 0.5, 0, -s);
   ctx.closePath();
   ctx.fill();
   ctx.restore();
@@ -139,52 +194,58 @@ function drawShape(ctx, p) {
       break;
     }
     case "square": {
+      // crisp, un-rotated pixel block (no glow — handled by drawTrail)
       const sz = p.size * (1 - lr * 0.3);
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rot);
-      ctx.fillRect(-sz / 2, -sz / 2, sz, sz);
-      ctx.restore();
+      ctx.fillRect(p.x - sz / 2, p.y - sz / 2, sz, sz);
       break;
     }
     case "star4":
       drawSpark(ctx, p.x, p.y, p.size, p.rot);
       break;
-    case "diamond": {
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rot);
-      ctx.beginPath();
-      ctx.moveTo(0, -p.size);
-      ctx.lineTo(p.size * 0.6, 0);
-      ctx.lineTo(0, p.size);
-      ctx.lineTo(-p.size * 0.6, 0);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
+    case "glitter":
+      drawGlitter(ctx, p);
       break;
-    }
+    case "petal":
+      drawPetal(ctx, p);
+      break;
     case "heart":
-      drawHeart(ctx, p.x, p.y, p.size);
+      drawHeart(ctx, p);
       break;
     case "leaf": {
+      const s = p.size * (1 - lr * 0.2);
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rot);
+      // almond leaf body
       ctx.beginPath();
-      ctx.ellipse(0, 0, p.size, p.size * 0.45, 0, 0, Math.PI * 2);
+      ctx.moveTo(0, -s);
+      ctx.bezierCurveTo(s * 0.8, -s * 0.4, s * 0.8, s * 0.4, 0, s);
+      ctx.bezierCurveTo(-s * 0.8, s * 0.4, -s * 0.8, -s * 0.4, 0, -s);
+      ctx.closePath();
       ctx.fill();
+      // central vein
+      ctx.save();
+      ctx.globalAlpha *= 0.5;
+      ctx.lineWidth = Math.max(0.6, s * 0.08);
+      ctx.strokeStyle = ctx.fillStyle;
+      ctx.beginPath();
+      ctx.moveTo(0, -s * 0.85);
+      ctx.lineTo(0, s * 0.85);
+      ctx.stroke();
+      ctx.restore();
       ctx.restore();
       break;
     }
     case "flame": {
+      const s = p.size * (1 - lr * 0.2);
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rot);
+      // flame teardrop, tip up
       ctx.beginPath();
-      ctx.moveTo(0, -p.size * 1.3);
-      ctx.lineTo(p.size * 0.7, p.size * 0.6);
-      ctx.lineTo(-p.size * 0.7, p.size * 0.6);
+      ctx.moveTo(0, -s * 1.4);
+      ctx.bezierCurveTo(s * 0.8, -s * 0.4, s * 0.6, s * 0.6, 0, s * 0.7);
+      ctx.bezierCurveTo(-s * 0.6, s * 0.6, -s * 0.8, -s * 0.4, 0, -s * 1.4);
       ctx.closePath();
       ctx.fill();
       ctx.restore();
@@ -207,7 +268,8 @@ export function drawTrail(ctx, st) {
     ctx.save();
     ctx.globalAlpha = a * 0.9;
     ctx.fillStyle = p.color;
-    ctx.shadowBlur = 8;
+    // pixels stay crisp and blocky; everything else glows softly
+    ctx.shadowBlur = p.shape === "square" ? 0 : 8;
     ctx.shadowColor = p.color;
     drawShape(ctx, p);
     ctx.restore();

@@ -125,6 +125,7 @@ export default function CosmeticsScreen({
                 >
                   <TrailPreview trail={t} />
                   <span className="text-xs font-medium">{t.name}</span>
+                  <p className="text-[10px] leading-tight text-white/40 text-center">{t.desc}</p>
                   {isStar && !starOwned ? (
                     <button
                       onClick={onBuyStar}
@@ -194,22 +195,29 @@ function Section({ title, subtitle, children }) {
   );
 }
 
+const TRAIL_GLYPH = {
+  bubble: "○", puff: "◍", sparkle: "✦", petal: "✿", ember: "●",
+  leaf: "☘", heart: "♥", pixel: "◼", flame: "✺", galaxy: "✧", stardust: "✨",
+};
+
 function TrailPreview({ trail }) {
   const c = trail.color;
+  const g = TRAIL_GLYPH[trail.style] || "●";
   return (
-    <div className="flex h-8 items-center justify-center gap-1">
-      {[0.25, 0.45, 0.7, 1].map((o, i) => (
+    <div className="flex h-8 items-center justify-center gap-1.5">
+      {[0.4, 0.7, 1].map((o, i) => (
         <span
           key={i}
-          className="rounded-full"
           style={{
-            width: 10 - i * 1.6,
-            height: 10 - i * 1.6,
-            background: c,
+            color: c,
             opacity: o,
-            boxShadow: `0 0 6px ${c}`,
+            fontSize: i === 2 ? 16 : 12,
+            lineHeight: 1,
+            textShadow: `0 0 6px ${c}`,
           }}
-        />
+        >
+          {g}
+        </span>
       ))}
     </div>
   );
