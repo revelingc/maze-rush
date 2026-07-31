@@ -36,7 +36,8 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
     if (!canvas || !container) return;
 
     const cfg = getLevelConfig(level);
-    const maze = generateMaze(cfg.cols, cfg.rows);
+    const loops = cfg.cols + cfg.hazards * 3;
+    const maze = generateMaze(cfg.cols, cfg.rows, loops);
     const rect = container.getBoundingClientRect();
     const size = Math.max(220, Math.min(rect.width, rect.height));
     const dpr = Math.min(window.devicePixelRatio || 1, 2);

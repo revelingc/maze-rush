@@ -14,7 +14,7 @@ const DIRS = [
  * Generates a perfect maze using recursive backtracking.
  * Each cell has walls: [top, right, bottom, left] (booleans).
  */
-export function generateMaze(cols, rows) {
+export function generateMaze(cols, rows, loops = 0) {
   const grid = [];
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
@@ -49,6 +49,30 @@ export function generateMaze(cols, rows) {
       break;
     }
   }
+
+  // Add extra cutouts (loops) so there are alternate routes around hazards.
+  if (loops > 0) {
+    let added = 0;
+    let guard = 0;
+    while (added < loops && guard < loops * 12) {
+      guard++;
+      const cx = Math.floor(Math.random() * cols);
+      const cy = Math.floor(Math.random() * rows);
+      const dir = Math.floor(Math.random() * 4);
+      if (dir === 0 && cy === 0) continue;
+      if (dir === 1 && cx === cols - 1) continue;
+      if (dir === 2 && cy === rows - 1) continue;
+      if (dir === 3 && cx === 0) continue;
+      const cell = grid[cy * cols + cx];
+      if (!cell.walls[dir]) continue; // already open
+      const nx = cx + DX[dir];
+      const ny = cy + DY[dir];
+      cell.walls[dir] = false;
+      grid[ny * cols + nx].walls[(dir + 2) % 4] = false;
+      added++;
+    }
+  }
+
   return { grid, cols, rows };
 }
 
@@ -61,7 +85,7 @@ export function getLevelConfig(level) {
   const d = Math.pow(1.05, level - 1); // 5% harder each level
   const size = Math.min(40, 10 + Math.round((level - 1) * 1.1));
   const hazards = level >= 3 ? Math.min(12, Math.floor((level - 1) / 1.3)) : 0;
-  const hazardSpeed = Math.min(125, 32 * d);
+  const hazardSpeed = Math.min(240, 80 * d);
   const timer = Math.max(20, Math.round(58 / d));
   return {
     level,
