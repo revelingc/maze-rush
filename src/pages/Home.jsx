@@ -14,7 +14,7 @@ import CosmeticsScreen from "@/components/maze/CosmeticsScreen";
 import ObstacleIntroModal from "@/components/maze/ObstacleIntroModal";
 import { loadState, saveState, loadHighScores, addHighScore, loadBestTimes, setBestTime, loadSettings, saveSettings, renamePlayer, resetPurchases } from "@/lib/gameStorage";
 import { purchaseProduct } from "@/lib/nativePurchase";
-import { getTrail } from "@/lib/trails";
+import { getTrail, TRAILS } from "@/lib/trails";
 import { shareResult } from "@/lib/shareUtils";
 import { getLevelConfig } from "@/lib/mazeGenerator";
 import { generateGoofyName, containsProfanity } from "@/lib/nameUtils";
@@ -282,6 +282,40 @@ export default function Home() {
     }
   };
 
+  const handleBuyBundle = async (bundleId) => {
+    setBuying(true);
+    try {
+      const res = await purchaseProduct(bundleId);
+      if (!res?.ok) {
+        if (res?.reason === "unavailable") alert("In-app purchases are available in the installed app.");
+        return;
+      }
+      const allTrailIds = TRAILS.filter((t) => !t.star).map((t) => t.id);
+      if (bundleId === "bundle_star_stardust") {
+        setStarOwned(true);
+      } else if (bundleId === "bundle_consumables") {
+        setAdFree(true);
+        setTrailsOwned(allTrailIds);
+        setLives(6);
+        setLevel(1);
+        setStreak(0);
+        setAdUsed(false);
+        setResetToken((t) => t + 1);
+      } else if (bundleId === "bundle_everything") {
+        setStarOwned(true);
+        setAdFree(true);
+        setTrailsOwned(allTrailIds);
+        setLives(6);
+        setLevel(1);
+        setStreak(0);
+        setAdUsed(false);
+        setResetToken((t) => t + 1);
+      }
+    } finally {
+      setBuying(false);
+    }
+  };
+
   const handleShare = useCallback(async () => {
     await shareResult({ level, streak, bestStreak });
   }, [level, streak, bestStreak]);
@@ -355,6 +389,8 @@ export default function Home() {
         trailsOwned={trailsOwned}
         onBuyTrail={handleBuyTrail}
         buying={buying}
+        adFree={adFree}
+        onBuyBundle={handleBuyBundle}
         onBack={() => navigate(-1)}
       />
     );

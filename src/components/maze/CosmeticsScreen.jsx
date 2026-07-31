@@ -3,6 +3,7 @@ import { ChevronLeft, Lock, Check } from "lucide-react";
 import { DOT_SKINS, isSkinUnlocked } from "@/lib/skins";
 import { TRAILS } from "@/lib/trails";
 import DotPreview from "@/components/maze/DotPreview";
+import StoreBundles from "@/components/maze/StoreBundles";
 
 const WALL_PRESETS = ["#39496B", "#475569", "#7C3AED", "#DB2777", "#0EA5E9", "#F59E0B", "#10B981", "#F8FAFC"];
 const BG_PRESETS = ["#0B0F1A", "#000000", "#0F172A", "#1E1B4B", "#3B0764", "#7F1D1D", "#082F49", "#1F2937"];
@@ -24,6 +25,8 @@ export default function CosmeticsScreen({
   setHunterColor,
   starOwned,
   onBuyStar,
+  adFree,
+  onBuyBundle,
   trail,
   setTrail,
   trailsOwned,
@@ -47,6 +50,13 @@ export default function CosmeticsScreen({
       </header>
 
       <div className="flex-1 overflow-y-auto px-5 safe-pb-6">
+        <StoreBundles
+          starOwned={starOwned}
+          adFree={adFree}
+          trailsOwned={trailsOwned}
+          buying={buying}
+          onBuyBundle={onBuyBundle}
+        />
         <Section title="Dot Color" subtitle="Unlock a new look every 5 levels.">
           <div className="grid grid-cols-3 gap-3">
             {DOT_SKINS.map((s) => {
