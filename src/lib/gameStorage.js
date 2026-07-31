@@ -1,3 +1,7 @@
+import { TRAILS } from "@/lib/trails";
+
+const ALL_TRAIL_IDS = TRAILS.map((t) => t.id);
+
 const KEY = "mazerush_state_v1";
 
 export function loadState() {
@@ -9,7 +13,7 @@ export function loadState() {
       const str = (v, d) => (typeof v === "string" && v.length ? v : d);
       return {
         level: num(p.level, 1),
-        lives: num(p.lives, 3),
+        lives: 6,
         streak: num(p.streak, 0),
         bestStreak: num(p.bestStreak, 0),
         bestLevel: num(p.bestLevel, 1),
@@ -19,26 +23,28 @@ export function loadState() {
         hazardColor: str(p.hazardColor, "#FB7185"),
         laserColor: str(p.laserColor, "#22D3EE"),
         hunterColor: str(p.hunterColor, "#A855F7"),
-        starOwned: !!p.starOwned,
         seenIntros: Array.isArray(p.seenIntros) ? p.seenIntros : [],
         displayName: str(p.displayName, null),
-        adFree: !!p.adFree,
+        // All purchasable items are assumed purchased.
+        starOwned: true,
+        adFree: true,
         trail: str(p.trail, null),
-        trailsOwned: Array.isArray(p.trailsOwned) ? p.trailsOwned : [],
+        trailsOwned: ALL_TRAIL_IDS,
       };
     }
   } catch (e) {
     /* ignore */
   }
   return {
-    level: 1, lives: 3, streak: 0, bestStreak: 0, bestLevel: 1,
+    level: 1, lives: 6, streak: 0, bestStreak: 0, bestLevel: 1,
     skin: "default", wallColor: "#39496B", bgColor: "#0B0F1A",
     hazardColor: "#FB7185", laserColor: "#22D3EE", hunterColor: "#A855F7",
-    starOwned: false, seenIntros: [],
+    seenIntros: [],
     displayName: null,
-    adFree: false,
+    starOwned: true,
+    adFree: true,
     trail: null,
-    trailsOwned: [],
+    trailsOwned: ALL_TRAIL_IDS,
   };
 }
 
