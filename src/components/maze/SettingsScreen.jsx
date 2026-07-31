@@ -42,11 +42,11 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
   };
 
   return (
-    <div className="relative flex h-[100dvh] flex-col bg-slate-950 px-6 text-white">
+    <div className="relative flex h-[100dvh] flex-col bg-neutral-100 px-6 text-slate-900">
       <header className="flex items-center gap-3 pt-6 pb-4">
         <button
           onClick={onBack}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-white/80 ring-1 ring-white/10 transition hover:bg-white/10"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50"
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
@@ -55,7 +55,7 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
 
       <div className="flex-1 overflow-y-auto pb-8">
         {/* Haptics */}
-        <Section icon={<Vibrate className="h-4 w-4 text-rose-300" />} title="Haptics" subtitle="Vibration on death">
+        <Section icon={<Vibrate className="h-4 w-4 text-rose-500" />} title="Haptics" subtitle="Vibration on death">
           <Row label="Haptic feedback">
             <Checkbox
               checked={settings.hapticsEnabled}
@@ -87,7 +87,7 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
         </Section>
 
         {/* Accessibility */}
-        <Section icon={<Eye className="h-4 w-4 text-sky-300" />} title="Accessibility" subtitle="Visual clarity">
+        <Section icon={<Eye className="h-4 w-4 text-sky-500" />} title="Accessibility" subtitle="Visual clarity">
           <Row label="Colorblind / high contrast" hint="Uses colorblind-safe hazard colors">
             <Checkbox
               checked={settings.colorblind}
@@ -106,48 +106,48 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
 
         {/* Account */}
         <Section
-          icon={<Cloud className="h-4 w-4 text-indigo-300" />}
+          icon={<Cloud className="h-4 w-4 text-indigo-500" />}
           title="Account sync"
           subtitle="Leaderboard & purchases"
         >
           {account ? (
-            <div className="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
+            <div className="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400/15 ring-1 ring-emerald-300/30">
-                  <Check className="h-5 w-5 text-emerald-300" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 ring-1 ring-emerald-200">
+                  <Check className="h-5 w-5 text-emerald-600" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{account.name}</p>
-                  <p className="text-xs text-white/40">Connected · {account.provider}</p>
+                  <p className="truncate text-sm font-semibold text-slate-900">{account.name}</p>
+                  <p className="text-xs text-slate-500">Connected · {account.provider}</p>
                 </div>
               </div>
-              <p className="mt-3 text-xs text-white/40">
+              <p className="mt-3 text-xs text-slate-500">
                 Your display name and purchases are linked to this account across the installed app.
               </p>
               <button
                 onClick={handleSignOut}
-                className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-3 py-2 text-xs font-medium text-white/70 ring-1 ring-white/10 transition hover:bg-white/10"
+                className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-2 text-xs font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-200"
               >
                 <LogOut className="h-3.5 w-3.5" /> Sign out
               </button>
             </div>
           ) : (
-            <div className="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
-              <div className="flex items-center gap-2 text-sm text-white/70">
-                <Smartphone className="h-4 w-4 text-white/40" />
-                Detected platform: <span className="font-semibold text-white">{providerLabel}</span>
+            <div className="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+              <div className="flex items-center gap-2 text-sm text-slate-700">
+                <Smartphone className="h-4 w-4 text-slate-400" />
+                Detected platform: <span className="font-semibold text-slate-900">{providerLabel}</span>
               </div>
-              <p className="mt-2 text-xs text-white/40">
+              <p className="mt-2 text-xs text-slate-500">
                 Sign in to sync your leaderboard name and keep purchases tied to your account.
               </p>
               <button
                 onClick={handleSignIn}
                 disabled={connecting}
-                className="mt-4 w-full rounded-xl bg-indigo-400 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-indigo-300 disabled:opacity-50"
+                className="mt-4 w-full rounded-xl bg-indigo-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-400 disabled:opacity-50"
               >
                 {connecting ? "Connecting…" : `Sign in with ${providerLabel.split(" / ")[0]}`}
               </button>
-              {msg && <p className="mt-3 text-xs text-amber-300/80">{msg}</p>}
+              {msg && <p className="mt-3 text-xs text-amber-600">{msg}</p>}
             </div>
           )}
         </Section>
@@ -161,13 +161,13 @@ function Section({ icon, title, subtitle, children }) {
     <motion.section
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mt-4 rounded-2xl bg-white/[0.03] p-4 ring-1 ring-white/10"
+      className="mt-4 rounded-2xl bg-white p-4 ring-1 ring-slate-200"
     >
       <div className="mb-3 flex items-center gap-2">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/5">{icon}</div>
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100">{icon}</div>
         <div>
-          <p className="text-sm font-semibold">{title}</p>
-          <p className="text-[11px] text-white/40">{subtitle}</p>
+          <p className="text-sm font-semibold text-slate-900">{title}</p>
+          <p className="text-[11px] text-slate-500">{subtitle}</p>
         </div>
       </div>
       <div className="space-y-3">{children}</div>
@@ -179,8 +179,8 @@ function Row({ label, hint, children }) {
   return (
     <div className="flex items-center justify-between gap-4">
       <div className="min-w-0">
-        <p className="text-sm font-medium">{label}</p>
-        {hint && <p className="text-[11px] text-white/40">{hint}</p>}
+        <p className="text-sm font-medium text-slate-900">{label}</p>
+        {hint && <p className="text-[11px] text-slate-500">{hint}</p>}
       </div>
       <div className="shrink-0">{children}</div>
     </div>
@@ -191,7 +191,7 @@ function TestButton({ onClick }) {
   return (
     <button
       onClick={onClick}
-      className="mt-1 rounded-lg bg-white/5 px-3 py-1.5 text-xs font-medium text-white/60 ring-1 ring-white/10 transition hover:bg-white/10"
+      className="mt-1 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-200"
     >
       Test vibration
     </button>
