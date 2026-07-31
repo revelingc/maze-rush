@@ -4,8 +4,6 @@ import { ArrowLeft, Vibrate, Eye, Cloud, Check, Smartphone, LogOut, Trash2, Joys
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { signIn as nativeSignIn, signOut as nativeSignOut, detectPlatform } from "@/lib/nativeAccount";
-import { useAuth } from "@/lib/AuthContext";
-import { base44 } from "@/api/base44Client";
 import { clearAllData } from "@/lib/gameStorage";
 import {
   AlertDialog,
@@ -25,8 +23,7 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
   const platform = detectPlatform();
   const providerLabel = platform === "ios" ? "Apple / iCloud" : "Google / Android";
   const account = settings.account;
-  const { isAuthenticated } = useAuth();
-  const showDelete = isAuthenticated || !!account;
+  const showDelete = !!account;
   const [deleting, setDeleting] = useState(false);
 
   const update = (patch) => setSettings((s) => ({ ...s, ...patch }));
@@ -65,11 +62,7 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
       await nativeSignOut();
       onAccount(null);
     } finally {
-      if (isAuthenticated) {
-        base44.auth.logout("/");
-      } else {
-        window.location.href = "/";
-      }
+      window.location.href = "/";
     }
   };
 
