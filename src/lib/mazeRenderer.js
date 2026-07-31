@@ -1,6 +1,54 @@
 // Canvas renderer for Maze Rush (scrolling world). The joystick lives in a
 // separate DOM control pad below the maze, so nothing is drawn over the map.
 
+function drawStar(ctx, cx, cy, r, now) {
+  const rot = now / 600;
+  const spikes = 5;
+  ctx.beginPath();
+  for (let i = 0; i < spikes * 2; i++) {
+    const ang = rot + (Math.PI / spikes) * i - Math.PI / 2;
+    const rad = i % 2 === 0 ? r * 1.15 : r * 0.5;
+    const px = cx + Math.cos(ang) * rad;
+    const py = cy + Math.sin(ang) * rad;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawBall(ctx, st, now) {
+  const { ball } = st;
+  const color = st.skinColor || "#5EEAD4";
+  ctx.save();
+  ctx.shadowBlur = 22;
+  ctx.shadowColor = color;
+  ctx.fillStyle = color;
+  if (st.skinStar) {
+    const sp = Math.hypot(ball.vx, ball.vy);
+    if (sp > 10) {
+      const tx = -ball.vx / sp;
+      const ty = -ball.vy / sp;
+      const len = Math.min(ball.r * 2.4, sp * 0.1);
+      ctx.save();
+      ctx.globalAlpha = 0.45;
+      ctx.beginPath();
+      ctx.moveTo(ball.x + tx * len, ball.y + ty * len);
+      ctx.lineTo(ball.x + ty * ball.r * 0.6, ball.y - tx * ball.r * 0.6);
+      ctx.lineTo(ball.x - ty * ball.r * 0.6, ball.y + tx * ball.r * 0.6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+    drawStar(ctx, ball.x, ball.y, ball.r, now);
+  } else {
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function edgePoint(ang, w, h, margin) {
   const dx = Math.cos(ang);
   const dy = Math.sin(ang);
@@ -21,7 +69,7 @@ export function renderGame(ctx, st) {
   const u = Math.min(w, h);
 
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = "#0B0F1A";
+  ctx.fillStyle = st.bgColor || "#0B0F1A";
   ctx.fillRect(0, 0, w, h);
 
   // ---- world layer (scrolled) ----
@@ -46,7 +94,7 @@ export function renderGame(ctx, st) {
   // walls
   ctx.lineCap = "round";
   ctx.lineWidth = Math.max(2, cs * 0.11);
-  ctx.strokeStyle = "#39496B";
+  ctx.strokeStyle = st.wallColor || "#39496B";
   ctx.shadowBlur = 5;
   ctx.shadowColor = "rgba(91,160,255,0.22)";
   ctx.beginPath();
@@ -75,16 +123,7 @@ export function renderGame(ctx, st) {
 
   // ball (blink while invulnerable)
   const blink = invuln > 0 && Math.floor(now / 90) % 2 === 0;
-  if (!blink) {
-    ctx.save();
-    ctx.shadowBlur = 22;
-    ctx.shadowColor = "#5EEAD4";
-    ctx.fillStyle = "#5EEAD4";
-    ctx.beginPath();
-    ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
+  if (!blink) drawBall(ctx, st, now);
 
   ctx.restore(); // back to screen space
 

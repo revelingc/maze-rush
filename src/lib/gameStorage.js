@@ -6,17 +6,25 @@ export function loadState() {
     if (raw) {
       const p = JSON.parse(raw);
       const num = (v, d) => (Number.isFinite(v) && v >= 0 ? v : d);
+      const str = (v, d) => (typeof v === "string" && v.length ? v : d);
       return {
         level: num(p.level, 1),
         lives: num(p.lives, 3),
         streak: num(p.streak, 0),
         bestStreak: num(p.bestStreak, 0),
+        bestLevel: num(p.bestLevel, 1),
+        skin: str(p.skin, "default"),
+        wallColor: str(p.wallColor, "#39496B"),
+        bgColor: str(p.bgColor, "#0B0F1A"),
       };
     }
   } catch (e) {
     /* ignore */
   }
-  return { level: 1, lives: 3, streak: 0, bestStreak: 0 };
+  return {
+    level: 1, lives: 3, streak: 0, bestStreak: 0, bestLevel: 1,
+    skin: "default", wallColor: "#39496B", bgColor: "#0B0F1A",
+  };
 }
 
 export function saveState(state) {

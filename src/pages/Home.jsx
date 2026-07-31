@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Heart, Zap, Gauge, Flame, Trophy, BarChart3 } from "lucide-react";
+import { Heart, Zap, Gauge, Flame, Trophy, BarChart3, Home as HomeIcon } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import MazeCanvas from "@/components/maze/MazeCanvas";
 import AdOverlay from "@/components/maze/AdOverlay";
@@ -9,25 +9,33 @@ import LevelCompleteModal from "@/components/maze/LevelCompleteModal";
 import LeaderboardModal from "@/components/maze/LeaderboardModal";
 import NamePromptModal from "@/components/maze/NamePromptModal";
 import ControlPad from "@/components/maze/ControlPad";
+import MainMenu from "@/components/maze/MainMenu";
+import CosmeticsScreen from "@/components/maze/CosmeticsScreen";
 import { loadState, saveState } from "@/lib/gameStorage";
 import { getLevelConfig } from "@/lib/mazeGenerator";
 import { generateGoofyName } from "@/lib/nameUtils";
+import { getSkin } from "@/lib/skins";
 
 export default function Home() {
   const initial = loadState();
+  const [screen, setScreen] = useState("menu"); // 'menu' | 'play' | 'cosmetics'
   const [level, setLevel] = useState(initial.level);
   const [lives, setLives] = useState(initial.lives);
   const [streak, setStreak] = useState(initial.streak);
   const [bestStreak, setBestStreak] = useState(initial.bestStreak);
+  const [bestLevel, setBestLevel] = useState(initial.bestLevel);
+  const [skin, setSkin] = useState(initial.skin || "default");
+  const [wallColor, setWallColor] = useState(initial.wallColor || "#39496B");
+  const [bgColor, setBgColor] = useState(initial.bgColor || "#0B0F1A");
   const [running, setRunning] = useState(true);
   const [resetToken, setResetToken] = useState(0);
-  const [modal, setModal] = useState(null); // 'levelcomplete' | 'gameover' | 'nameprompt'
-  const [ad, setAd] = useState(null); // 'standard' | 'premium'
+  const [modal, setModal] = useState(null);
+  const [ad, setAd] = useState(null);
   const [showBoard, setShowBoard] = useState(false);
   const [myId, setMyId] = useState(null);
   const [myName, setMyName] = useState("");
-  const [displayName, setDisplayName] = useState(null); // chosen leaderboard name
-  const [pendingScore, setPendingScore] = useState(null); // { level, streak }
+  const [displayName, setDisplayName] = useState(null);
+  const [pendingScore, setPendingScore] = useState(null);
 
   const livesRef = useRef(lives);
   livesRef.current = lives;
@@ -42,8 +50,12 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    saveState({ level, lives, streak, bestStreak });
-  }, [level, lives, streak, bestStreak]);
+    saveState({ level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor });
+  }, [level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor]);
+
+  useEffect(() => {
+    if (level > bestLevel) setBestLevel(level);
+  }, [level, bestLevel]);
 
   const checkQualifies = useCallback(async (reachedLevel, streakVal) => {
     try {
@@ -158,10 +170,66 @@ export default function Home() {
     setModal("gameover");
   };
 
+  const startPlay = () => {
+    if (lives <= 0) {
+      setLevel(1);
+      setLives(3);
+      setStreak(0);
+    }
+    setModal(null);
+    setAd(null);
+    setScreen("play");
+    setRunning(true);
+    setResetToken((t) => t + 1);
+  };
+
+  const goHome = () => {
+    setRunning(false);
+    setScreen("menu");
+    setModal(null);
+    setAd(null);
+  };
+
+  const skinObj = getSkin(skin);
   const cfg = getLevelConfig(level);
 
+  if (screen === "menu") {
+    return (
+      <div className="relative">
+        <MainMenu
+          bestLevel={bestLevel}
+          bestStreak={bestStreak}
+          skinObj={skinObj}
+          onPlay={startPlay}
+          onCosmetics={() => setScreen("cosmetics")}
+          onBoard={() => setShowBoard(true)}
+        />
+        <AnimatePresence>
+          {showBoard && (
+            <LeaderboardModal myId={myId} onClose={() => setShowBoard(false)} />
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  if (screen === "cosmetics") {
+    return (
+      <CosmeticsScreen
+        bestLevel={bestLevel}
+        skin={skin}
+        setSkin={setSkin}
+        wallColor={wallColor}
+        setWallColor={setWallColor}
+        bgColor={bgColor}
+        setBgColor={setBgColor}
+        onBack={() => setScreen("menu")}
+      />
+    );
+  }
+
   return (
-    <div className="flex h-[100dvh] flex-col overflow-hidden bg-slate-950 text-white">
+    <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-slate-950 text-white">
       <Header
         level={level}
         lives={lives}
@@ -184,6 +252,10 @@ export default function Home() {
               resetToken={resetToken}
               onLevelComplete={handleLevelComplete}
               onLifeLost={handleLifeLost}
+              skinColor={skinObj.color}
+              skinStar={!!skinObj.star}
+              wallColor={wallColor}
+              bgColor={bgColor}
             />
             <AnimatePresence>
               {modal === "levelcomplete" && (
@@ -206,8 +278,15 @@ export default function Home() {
               )}
             </AnimatePresence>
           </div>
-          <div className="h-32 shrink-0">
+          <div className="relative h-32 shrink-0">
             <ControlPad pointer={pointer} disabled={!running} />
+            <button
+              onClick={goHome}
+              className="absolute bottom-2 left-2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-slate-800/80 text-white/80 ring-1 ring-white/10 backdrop-blur transition hover:bg-slate-700 hover:text-white"
+              title="Main Menu"
+            >
+              <HomeIcon className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </main>
