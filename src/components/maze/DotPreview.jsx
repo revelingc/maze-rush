@@ -5,6 +5,19 @@ import React from "react";
  * "Shooting Star" skin.
  */
 export default function DotPreview({ skin, size = 28 }) {
+  if (skin?.blackhole) {
+    return (
+      <span
+        className="inline-block rounded-full"
+        style={{
+          width: size,
+          height: size,
+          background: "#0B0F1A",
+          boxShadow: `0 0 10px #7C3AED, inset 0 0 0 ${Math.max(1, size * 0.12)}px #7C3AED`,
+        }}
+      />
+    );
+  }
   if (skin?.star) {
     return (
       <svg

@@ -44,6 +44,19 @@ function drawBall(ctx, st, now) {
       ctx.restore();
     }
     drawStar(ctx, ball.x, ball.y, ball.r, now);
+  } else if (st.skinBlackhole) {
+    // glowing accretion ring around a dark core
+    ctx.shadowBlur = 18;
+    ctx.shadowColor = "#7C3AED";
+    ctx.strokeStyle = "#7C3AED";
+    ctx.lineWidth = Math.max(2, ball.r * 0.2);
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = "#0B0F1A";
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.r * 0.8, 0, Math.PI * 2);
+    ctx.fill();
   } else {
     ctx.beginPath();
     ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);

@@ -29,6 +29,7 @@ export default function Home() {
   const [streak, setStreak] = useState(initial.streak);
   const [bestStreak, setBestStreak] = useState(initial.bestStreak);
   const [bestLevel, setBestLevel] = useState(initial.bestLevel);
+  const [cycle, setCycle] = useState(initial.cycle || 1);
   const [skin, setSkin] = useState(initial.skin || "default");
   const [wallColor, setWallColor] = useState(initial.wallColor || "#39496B");
   const [bgColor, setBgColor] = useState(initial.bgColor || "#0B0F1A");
@@ -62,8 +63,8 @@ export default function Home() {
   const pointer = useRef({ active: false, ax: 0, ay: 0, x: 0, y: 0, maxR: 70 });
 
   useEffect(() => {
-    saveState({ level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, hazardColor, laserColor, hunterColor, starOwned, seenIntros, displayName, adFree, trail, trailsOwned });
-  }, [level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned, seenIntros, adFree, trail, trailsOwned]);
+    saveState({ level, lives, streak, bestStreak, bestLevel, cycle, skin, wallColor, bgColor, hazardColor, laserColor, hunterColor, starOwned, seenIntros, displayName, adFree, trail, trailsOwned });
+  }, [level, lives, streak, bestStreak, bestLevel, cycle, skin, wallColor, bgColor, starOwned, seenIntros, adFree, trail, trailsOwned]);
 
   useEffect(() => {
     saveSettings(settings);
@@ -144,6 +145,15 @@ export default function Home() {
   }, [handleGameOver]);
 
   const nextLevel = () => {
+    if (level >= 100) {
+      // Completing level 100 resets the run and bumps the base difficulty +50%.
+      setLevel(1);
+      setCycle((c) => c + 1);
+      setModal(null);
+      setRunning(true);
+      setResetToken((t) => t + 1);
+      return;
+    }
     setLevel((l) => l + 1);
     setModal(null);
     setRunning(true);
@@ -263,7 +273,7 @@ export default function Home() {
   }, []);
 
   const skinObj = getSkin(skin);
-  const cfg = getLevelConfig(level);
+  const cfg = getLevelConfig(level, cycle);
   const cb = settings.colorblind;
   const effHazard = cb ? "#F0E442" : hazardColor;
   const effLaser = cb ? "#0072B2" : laserColor;
@@ -371,6 +381,7 @@ export default function Home() {
               onLifeLost={handleLifeLost}
               skinColor={skinObj.color}
               skinStar={!!skinObj.star}
+              skinBlackhole={!!skinObj.blackhole}
               wallColor={wallColor}
               bgColor={bgColor}
               hazardColor={effHazard}
@@ -379,6 +390,7 @@ export default function Home() {
               reducedMotion={settings.reducedMotion}
               trailStyle={trailCfg?.style || null}
               trailColor={trailCfg?.color || null}
+              cycle={cycle}
             />
             <AnimatePresence>
               {modal === "levelcomplete" && (
@@ -386,6 +398,8 @@ export default function Home() {
                   level={level}
                   time={lastTime?.secs}
                   isRecord={!!lastTime?.isRecord}
+                  cycleComplete={level >= 100}
+                  nextCycle={cycle + 1}
                   onNext={nextLevel}
                 />
               )}

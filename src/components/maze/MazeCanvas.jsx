@@ -22,7 +22,7 @@ const VISIBLE_CELLS = 7; // cells shown across the viewport width
  *  - pointer: shared ref { active, ax, ay, x, y, maxR }
  *  - level, running, resetToken, onLevelComplete, onLifeLost
  */
-export default function MazeCanvas({ level, running, resetToken, onLevelComplete, onLifeLost, pointer, skinColor, skinStar, wallColor, bgColor, hazardColor, laserColor, hunterColor, reducedMotion, trailStyle, trailColor }) {
+export default function MazeCanvas({ level, running, resetToken, onLevelComplete, onLifeLost, pointer, skinColor, skinStar, skinBlackhole, wallColor, bgColor, hazardColor, laserColor, hunterColor, reducedMotion, trailStyle, trailColor, cycle }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const stateRef = useRef(null);
@@ -54,7 +54,7 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
 
   useEffect(() => {
     if (!canvasRef.current || !containerRef.current) return;
-    const cfg = getLevelConfig(level);
+    const cfg = getLevelConfig(level, cycle || 1);
     const loops = cfg.cols + cfg.hazards * 3;
     const maze = generateMaze(cfg.cols, cfg.rows, loops);
     const dims = fitCanvas();
@@ -148,6 +148,7 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       cfg, w, h, ctx, worldW, worldH, camX: 0, camY: 0,
       skinColor: skinColor || "#5EEAD4",
       skinStar: !!skinStar,
+      skinBlackhole: !!skinBlackhole,
       wallColor: wallColor || "#39496B",
       bgColor: bgColor || "#0B0F1A",
       hazardColor: hazardColor || "#FB7185",
@@ -162,7 +163,7 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
     deadRef.current = false;
     if (pointer) pointer.current.active = false;
     lastRef.current = performance.now();
-  }, [level, resetToken]);
+  }, [level, resetToken, cycle]);
 
   useEffect(() => {
     const onResize = () => {

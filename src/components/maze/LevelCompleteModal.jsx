@@ -1,8 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Trophy, ChevronRight, Clock } from "lucide-react";
+import { Trophy, ChevronRight, Clock, Sparkles } from "lucide-react";
 
-export default function LevelCompleteModal({ level, time, isRecord, onNext }) {
+export default function LevelCompleteModal({ level, time, isRecord, cycleComplete, nextCycle, onNext }) {
   return (
     <Backdrop>
       <div className="text-center">
@@ -10,12 +10,25 @@ export default function LevelCompleteModal({ level, time, isRecord, onNext }) {
           <Trophy className="h-8 w-8 text-emerald-300" />
         </div>
         <p className="text-xs font-medium uppercase tracking-[0.25em] text-emerald-300/80">
-          Level Cleared
+          {cycleComplete ? "Cycle Complete" : "Level Cleared"}
         </p>
         <h2 className="mt-2 text-4xl font-semibold text-white">Level {level}</h2>
-        <p className="mt-3 text-sm text-white/50">
-          The maze grows 5% harder. Keep your streak alive.
-        </p>
+        {cycleComplete ? (
+          <>
+            <p className="mt-3 text-sm text-white/60">
+              You cleared all 100 levels. The maze resets and is now{" "}
+              <span className="text-white/90">50% harder</span> as a base.
+            </p>
+            <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-violet-400/15 px-3 py-1.5 text-xs font-semibold text-violet-200 ring-1 ring-violet-300/30">
+              <Sparkles className="h-3.5 w-3.5" />
+              Black Hole dot unlocked
+            </p>
+          </>
+        ) : (
+          <p className="mt-3 text-sm text-white/50">
+            The maze grows 5% harder. Keep your streak alive.
+          </p>
+        )}
 
         <div className="mt-4 flex items-center justify-center gap-2">
           <div className="flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 ring-1 ring-white/10">
@@ -35,7 +48,7 @@ export default function LevelCompleteModal({ level, time, isRecord, onNext }) {
           onClick={onNext}
           className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-400 px-6 py-3.5 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-300 active:scale-[0.98]"
         >
-          Next Level
+          {cycleComplete ? `Begin Cycle ${nextCycle}` : "Next Level"}
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
