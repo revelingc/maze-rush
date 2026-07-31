@@ -103,12 +103,12 @@ function ensureEndpointsOpen(grid, cols, rows, idx) {
 export function getLevelConfig(level, cycle = 1) {
   const cycleMult = Math.pow(1.5, cycle - 1); // +50% base per completed 100-level run
   const d = Math.pow(1.02, level - 1) * cycleMult; // 2% harder each level, cycle-scaled
-  const size = Math.min(40, 10 + Math.round((level - 1) * 1.1));
+  const size = Math.min(40, Math.round(10 * Math.pow(1.05, level - 1))); // map grows 5% per level
   const hazards = level >= 3 ? Math.min(12, Math.floor((level - 1) / 1.3)) : 0;
   const hazardSpeed = Math.min(240, 80 * d);
-  // Timer starts high and decays gently (sqrt of difficulty) so late levels
-  // still give enough time to navigate the larger, scrolling mazes.
-  const timer = Math.max(30, Math.round(95 / Math.sqrt(d)));
+  // Timer caps at 75s and floors at 50s so every level is completable but
+  // stays challenging as the maze and obstacles scale up.
+  const timer = Math.max(50, Math.min(75, Math.round(75 / Math.sqrt(d))));
   const lasers = level >= 12 ? Math.min(5, Math.floor((level - 12) / 5) + 1) : 0;
   const hunters = level >= 24 ? 1 : 0;
   const hunterSpeed = Math.min(50, 20 * d);
