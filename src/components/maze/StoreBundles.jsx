@@ -17,7 +17,7 @@ const BUNDLES = [
   {
     id: "bundle_consumables",
     name: "All Consumables",
-    price: 8.99,
+    price: 7.99,
     desc: "Go ad-free — six lives, no ads — and unlock every move trail.",
     icon: "shield",
     accent: "emerald",
@@ -25,7 +25,7 @@ const BUNDLES = [
   {
     id: "bundle_everything",
     name: "Everything Pack",
-    price: 11.99,
+    price: 9.99,
     desc: "The whole game: ad-free, every move trail, and the Shooting Star skin.",
     icon: "crown",
     accent: "violet",
