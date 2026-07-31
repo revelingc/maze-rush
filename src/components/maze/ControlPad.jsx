@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Move, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 /**
  * Dedicated thumb-steering pad. Sits below the maze so the thumb never
@@ -58,8 +57,6 @@ export default function ControlPad({ pointer, disabled }) {
     setKnob(null);
   };
 
-  const guide = maxR * 2;
-
   return (
     <div
       ref={padRef}
@@ -68,45 +65,37 @@ export default function ControlPad({ pointer, disabled }) {
       onPointerUp={up}
       onPointerCancel={up}
       style={{ touchAction: "none" }}
-      className="relative h-full w-full select-none overflow-hidden rounded-2xl bg-slate-800/60 ring-1 ring-teal-400/25"
+      className="relative h-full w-full select-none overflow-hidden rounded-2xl bg-slate-900/50 ring-1 ring-white/10"
     >
-      {/* label */}
-      <div className="pointer-events-none absolute left-3 top-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-teal-300/90">
-        <Move className="h-3.5 w-3.5" />
-        Steer here
-      </div>
+      {/* centered guide ring */}
+      <div
+        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10"
+        style={{ width: maxR * 2, height: maxR * 2 }}
+      />
 
-      {/* centered dashed guide with directional chevrons */}
-      {!knob && (
-        <div
-          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-          style={{ width: guide, height: guide }}
-        >
-          <div className="absolute inset-0 rounded-full border-2 border-dashed border-teal-300/40" />
-          <div className="absolute left-1/2 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-300/50" />
-          <ChevronUp className="absolute left-1/2 top-0 h-4 w-4 -translate-x-1/2 -translate-y-1/2 text-teal-300/50" />
-          <ChevronDown className="absolute left-1/2 bottom-0 h-4 w-4 -translate-x-1/2 translate-y-1/2 text-teal-300/50" />
-          <ChevronLeft className="absolute left-0 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 text-teal-300/50" />
-          <ChevronRight className="absolute right-0 top-1/2 h-4 w-4 translate-x-1/2 -translate-y-1/2 text-teal-300/50" />
-        </div>
+      {/* idle hint */}
+      {!knob && !disabled && (
+        <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-white/30">
+          Tap &amp; drag to steer
+        </p>
       )}
 
       {/* active joystick */}
       {knob && (
         <>
           <div
-            className="pointer-events-none absolute rounded-full border-2 border-teal-300/50"
-            style={{ width: guide, height: guide, left: knob.ax - maxR, top: knob.ay - maxR }}
+            className="pointer-events-none absolute rounded-full border border-teal-300/30"
+            style={{ width: maxR * 2, height: maxR * 2, left: knob.ax - maxR, top: knob.ay - maxR }}
           />
           <div
-            className="pointer-events-none absolute rounded-full bg-teal-300 shadow-[0_0_14px_rgba(94,234,212,0.7)]"
-            style={{ width: 32, height: 32, left: knob.ax + knob.kx - 16, top: knob.ay + knob.ky - 16 }}
+            className="pointer-events-none absolute rounded-full bg-teal-300/85 shadow-[0_0_12px_rgba(94,234,212,0.6)]"
+            style={{ width: 30, height: 30, left: knob.ax + knob.kx - 15, top: knob.ay + knob.ky - 15 }}
           />
         </>
       )}
 
       {/* disabled veil */}
-      {disabled && <div className="pointer-events-none absolute inset-0 bg-slate-950/50" />}
+      {disabled && <div className="pointer-events-none absolute inset-0 bg-slate-950/40" />}
     </div>
   );
 }
