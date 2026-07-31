@@ -38,7 +38,7 @@ export default function Home() {
   const [showBoard, setShowBoard] = useState(false);
   const [myId, setMyId] = useState(null);
   const [myName, setMyName] = useState("");
-  const [displayName, setDisplayName] = useState(null);
+  const [displayName, setDisplayName] = useState(initial.displayName || null);
   const [pendingScore, setPendingScore] = useState(null);
 
   const livesRef = useRef(lives);
@@ -61,7 +61,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    saveState({ level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned, seenIntros });
+    saveState({ level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned, seenIntros, displayName });
   }, [level, lives, streak, bestStreak, bestLevel, skin, wallColor, bgColor, starOwned, seenIntros]);
 
   useEffect(() => {
