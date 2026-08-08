@@ -65,13 +65,20 @@ export class MusicEngine {
   }
 
   async start() {
+    if (this.started) {
+      // Already running — just wake the context if the browser suspended it.
+      if (this.ctx && this.ctx.state === "suspended") {
+        try { await this.ctx.resume(); } catch (e) { /* ignore */ }
+      }
+      return;
+    }
     this.ensureContext();
     if (!this.ctx) return;
+    // Claim before any await so a concurrent start() can't spawn a 2nd timer.
+    this.started = true;
     if (this.ctx.state === "suspended") {
       try { await this.ctx.resume(); } catch (e) { /* ignore */ }
     }
-    if (this.timer) return;
-    this.started = true;
     this.setEnabled(this.enabled);
     this.nextStepTime = this.ctx.currentTime + 0.05;
     this.step = 0;
@@ -84,11 +91,12 @@ export class MusicEngine {
       clearInterval(this.timer);
       this.timer = null;
     }
+    // Mute only — never suspend. Suspending freezes already-scheduled notes,
+    // which then replay on top of the next start()'s fresh schedule (the
+    // "music plays over itself" bug). Letting them tail off silently keeps
+    // restarts clean.
     if (this.master && this.ctx) {
       this.master.gain.setTargetAtTime(0, this.ctx.currentTime, 0.05);
-    }
-    if (this.ctx && this.ctx.state === "running") {
-      this.ctx.suspend().catch(() => {});
     }
   }
 
