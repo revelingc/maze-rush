@@ -213,12 +213,19 @@ export function updateHazard(h, dt, maze, cs) {
 
 /**
  * Returns the world-space segment a laser beam occupies.
+ * The emitter is mounted on the midpoint of a real wall (`laser.wall`:
+ * 0=top,1=right,2=bottom,3=left) of cell (cx,cy) and fires one cell deep
+ * into that cell's open space — wall to blank space, never floating.
  */
 export function laserSegment(laser, cs) {
   const x0 = laser.cx * cs;
   const y0 = laser.cy * cs;
-  if (laser.orient === "h") return { ax: x0, ay: y0 + cs / 2, bx: x0 + cs, by: y0 + cs / 2 };
-  return { ax: x0 + cs / 2, ay: y0, bx: x0 + cs / 2, by: y0 + cs };
+  switch (laser.wall) {
+    case 0: return { ax: x0 + cs / 2, ay: y0, bx: x0 + cs / 2, by: y0 + cs };      // top wall -> fires down
+    case 1: return { ax: x0 + cs, ay: y0 + cs / 2, bx: x0, by: y0 + cs / 2 };      // right wall -> fires left
+    case 2: return { ax: x0 + cs / 2, ay: y0 + cs, bx: x0 + cs / 2, by: y0 };      // bottom wall -> fires up
+    default: return { ax: x0, ay: y0 + cs / 2, bx: x0 + cs, by: y0 + cs / 2 };    // left wall -> fires right
+  }
 }
 
 /**

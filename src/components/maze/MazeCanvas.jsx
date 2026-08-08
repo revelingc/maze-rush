@@ -96,21 +96,25 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       });
     }
 
-    // lasers (capped at 2 per map, levels 12+)
+    // Wall-mounted lasers (levels 12+): each emitter sits on a real wall of
+    // a cell and fires one cell deep into that cell's open space.
     const lasers = [];
     for (let i = 0; i < cfg.lasers; i++) {
-      let cx, cy, key, tries = 0;
+      let cx, cy, key, wall = -1, tries = 0;
       do {
         cx = Math.floor(Math.random() * cfg.cols);
         cy = Math.floor(Math.random() * cfg.rows);
         key = cy * cfg.cols + cx;
+        const cell = maze.grid[key];
+        const walls = [0, 1, 2, 3].filter((w) => cell.walls[w]);
+        wall = walls.length ? walls[Math.floor(Math.random() * walls.length)] : -1;
         tries++;
-      } while ((used.has(key) || (cx <= 2 && cy <= 2)) && tries < 80);
+      } while ((used.has(key) || (cx <= 2 && cy <= 2) || wall < 0) && tries < 80);
       used.add(key);
       lasers.push({
         cx,
         cy,
-        orient: Math.random() < 0.5 ? "h" : "v",
+        wall,
         phase: "idle",
         t: 0.5 + Math.random() * 2.5,
         warnTime: 0.9,
