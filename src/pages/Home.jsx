@@ -22,6 +22,7 @@ import { getSkin } from "@/lib/skins";
 import StatsScreen from "@/components/maze/StatsScreen";
 import SettingsScreen from "@/components/maze/SettingsScreen";
 import { useGameMusic } from "@/hooks/useGameMusic";
+import { getMusicEngine } from "@/lib/musicEngine";
 
 export default function Home() {
   const initial = loadState();
@@ -218,6 +219,14 @@ export default function Home() {
   };
 
   const startPlay = () => {
+    // Unlock the AudioContext inside the user gesture so background music
+    // can actually play (browsers block audio started outside a gesture).
+    if (settings.musicEnabled) {
+      const eng = getMusicEngine();
+      eng.setVolume(settings.musicVolume);
+      eng.setEnabled(true);
+      eng.start();
+    }
     if (lives <= 0) {
       setLevel(1);
       setLives(adFree ? 10 : 5);
