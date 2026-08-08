@@ -111,6 +111,34 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
           </div>
         </Section>
 
+        {/* Music */}
+        <Section
+          icon={<Music className="h-4 w-4 text-amber-500" />}
+          title="Music"
+          subtitle="Background techno loop"
+        >
+          <Row label="Background music" hint="Plays while you race">
+            <Checkbox
+              checked={settings.musicEnabled}
+              onCheckedChange={(v) => update({ musicEnabled: !!v })}
+              className="h-5 w-5"
+            />
+          </Row>
+          <div className={settings.musicEnabled ? "" : "opacity-40 pointer-events-none"}>
+            <Row label={`Volume · ${Math.round(settings.musicVolume * 100)}%`}>
+              <div className="w-40">
+                <Slider
+                  value={[settings.musicVolume]}
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  onValueChange={(v) => update({ musicVolume: v[0] })}
+                />
+              </div>
+            </Row>
+          </div>
+        </Section>
+
         {/* Accessibility */}
         <Section icon={<Eye className="h-4 w-4 text-sky-500" />} title="Accessibility" subtitle="Visual clarity">
           <Row label="Colorblind / high contrast" hint="Uses colorblind-safe hazard colors">
@@ -175,34 +203,6 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
             <span className="font-medium text-slate-600">Precise</span> reacts quicker near the center. Tune these
             if the orb feels sluggish or twitchy.
           </p>
-        </Section>
-
-        {/* Music */}
-        <Section
-          icon={<Music className="h-4 w-4 text-amber-500" />}
-          title="Music"
-          subtitle="Background techno loop"
-        >
-          <Row label="Background music" hint="Plays while you race">
-            <Checkbox
-              checked={settings.musicEnabled}
-              onCheckedChange={(v) => update({ musicEnabled: !!v })}
-              className="h-5 w-5"
-            />
-          </Row>
-          <div className={settings.musicEnabled ? "" : "opacity-40 pointer-events-none"}>
-            <Row label={`Volume · ${Math.round(settings.musicVolume * 100)}%`}>
-              <div className="w-40">
-                <Slider
-                  value={[settings.musicVolume]}
-                  min={0}
-                  max={1}
-                  step={0.05}
-                  onValueChange={(v) => update({ musicVolume: v[0] })}
-                />
-              </div>
-            </Row>
-          </div>
         </Section>
 
         {/* Account */}
