@@ -85,14 +85,38 @@ export function generateMaze(cols, rows, loops = 0) {
 }
 
 function ensureEndpointsOpen(grid, cols, rows, idx) {
-  const set = (i, wall) => { grid[i].walls[wall] = false; };
-  // Start cell (0,0): open right + bottom.
+  const set = (i, wall) => { if (i >= 0) grid[i].walls[wall] = false; };
+  // Start cell (0,0): open right + bottom (two ways out).
   if (cols > 1) { set(0, 1); set(idx(1, 0), 3); }
   if (rows > 1) { set(0, 2); set(idx(0, 1), 0); }
-  // Exit cell (cols-1, rows-1): open left + top.
+  // Exit cell (cols-1, rows-1): open left + top (two ways in).
   const ex = cols - 1, ey = rows - 1;
   if (cols > 1) { set(idx(ex, ey), 3); set(idx(ex - 1, ey), 1); }
   if (rows > 1) { set(idx(ex, ey), 0); set(idx(ex, ey - 1), 2); }
+
+  // If one of an endpoint's two neighbors is a 1-cell dead-end (only connects
+  // back to the endpoint), open one more wall on it so the route continues —
+  // otherwise that "second way" runs straight into a wall and feels like the
+  // start/exit has only one real exit.
+  const through = (cellI, backWall) => {
+    const cell = grid[cellI];
+    if (!cell) return;
+    const openCount = cell.walls.filter((w) => !w).length;
+    if (openCount >= 2) return; // already leads onward
+    for (const d of DIRS) {
+      if (d.wall === backWall) continue;
+      const ni = idx(cell.x + d.dx, cell.y + d.dy);
+      if (ni < 0) continue;            // boundary
+      if (!cell.walls[d.wall]) continue; // already open
+      cell.walls[d.wall] = false;
+      grid[ni].walls[d.opp] = false;
+      return;
+    }
+  };
+  if (cols > 1) through(idx(1, 0), 3);        // start's right neighbor
+  if (rows > 1) through(idx(0, 1), 0);        // start's bottom neighbor
+  if (cols > 1) through(idx(ex - 1, ey), 1);  // exit's left neighbor
+  if (rows > 1) through(idx(ex, ey - 1), 2); // exit's top neighbor
 }
 
 /**
