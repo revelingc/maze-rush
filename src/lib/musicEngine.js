@@ -22,6 +22,7 @@ export class MusicEngine {
   constructor() {
     this.ctx = null;
     this.master = null;
+    this.volumeGain = null;
     this.compressor = null;
     this.timer = null;
     this.nextStepTime = 0;
@@ -36,28 +37,36 @@ export class MusicEngine {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
     this.ctx = new AC();
+    // Instruments sum into a fixed-unity bus, then get compressed, then the
+    // user volume is applied AFTER compression. Putting the volume gain
+    // before the compressor would let the compressor clamp most of the
+    // slider's range (anything above -18 dB), so 100% and 30% would sound
+    // almost identical — the volume control wouldn't feel like it worked.
+    this.master = this.ctx.createGain();
+    this.master.gain.value = 1.0;
     this.compressor = this.ctx.createDynamicsCompressor();
     this.compressor.threshold.value = -18;
     this.compressor.ratio.value = 6;
     this.compressor.attack.value = 0.003;
     this.compressor.release.value = 0.25;
-    this.master = this.ctx.createGain();
-    this.master.gain.value = this.enabled ? this.volume : 0;
+    this.volumeGain = this.ctx.createGain();
+    this.volumeGain.gain.value = this.enabled ? this.volume : 0;
     this.master.connect(this.compressor);
-    this.compressor.connect(this.ctx.destination);
+    this.compressor.connect(this.volumeGain);
+    this.volumeGain.connect(this.ctx.destination);
   }
 
   setVolume(v) {
     this.volume = Math.max(0, Math.min(1, v));
-    if (this.master && this.enabled && this.started) {
-      this.master.gain.setTargetAtTime(this.volume, this.ctx.currentTime, 0.05);
+    if (this.volumeGain && this.enabled && this.started) {
+      this.volumeGain.gain.setTargetAtTime(this.volume, this.ctx.currentTime, 0.05);
     }
   }
 
   setEnabled(on) {
     this.enabled = !!on;
-    if (this.master && this.ctx) {
-      this.master.gain.setTargetAtTime(this.enabled && this.started ? this.volume : 0, this.ctx.currentTime, 0.05);
+    if (this.volumeGain && this.ctx) {
+      this.volumeGain.gain.setTargetAtTime(this.enabled && this.started ? this.volume : 0, this.ctx.currentTime, 0.05);
     }
     if (this.enabled && this.started && this.ctx && this.ctx.state === "suspended") {
       this.ctx.resume().catch(() => {});
@@ -95,8 +104,8 @@ export class MusicEngine {
     // which then replay on top of the next start()'s fresh schedule (the
     // "music plays over itself" bug). Letting them tail off silently keeps
     // restarts clean.
-    if (this.master && this.ctx) {
-      this.master.gain.setTargetAtTime(0, this.ctx.currentTime, 0.05);
+    if (this.volumeGain && this.ctx) {
+      this.volumeGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.05);
     }
   }
 
