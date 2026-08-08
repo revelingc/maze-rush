@@ -21,6 +21,7 @@ import { generateGoofyName, containsProfanity } from "@/lib/nameUtils";
 import { getSkin } from "@/lib/skins";
 import StatsScreen from "@/components/maze/StatsScreen";
 import SettingsScreen from "@/components/maze/SettingsScreen";
+import { useGameMusic } from "@/hooks/useGameMusic";
 
 export default function Home() {
   const initial = loadState();
@@ -62,6 +63,12 @@ export default function Home() {
   livesRef.current = lives;
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
+
+  useGameMusic({
+    screen,
+    enabled: settings.musicEnabled,
+    volume: settings.musicVolume,
+  });
   const pointer = useRef({ active: false, ax: 0, ay: 0, x: 0, y: 0, maxR: 70 });
 
   useEffect(() => {

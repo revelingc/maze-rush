@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Vibrate, Eye, Cloud, Check, Smartphone, LogOut, Trash2, Joystick } from "lucide-react";
+import { ArrowLeft, Vibrate, Eye, Cloud, Check, Smartphone, LogOut, Trash2, Joystick, Music } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { signIn as nativeSignIn, signOut as nativeSignOut, detectPlatform } from "@/lib/nativeAccount";
@@ -175,6 +175,34 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
             <span className="font-medium text-slate-600">Precise</span> reacts quicker near the center. Tune these
             if the orb feels sluggish or twitchy.
           </p>
+        </Section>
+
+        {/* Music */}
+        <Section
+          icon={<Music className="h-4 w-4 text-amber-500" />}
+          title="Music"
+          subtitle="Background techno loop"
+        >
+          <Row label="Background music" hint="Plays while you race">
+            <Checkbox
+              checked={settings.musicEnabled}
+              onCheckedChange={(v) => update({ musicEnabled: !!v })}
+              className="h-5 w-5"
+            />
+          </Row>
+          <div className={settings.musicEnabled ? "" : "opacity-40 pointer-events-none"}>
+            <Row label={`Volume · ${Math.round(settings.musicVolume * 100)}%`}>
+              <div className="w-40">
+                <Slider
+                  value={[settings.musicVolume]}
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  onValueChange={(v) => update({ musicVolume: v[0] })}
+                />
+              </div>
+            </Row>
+          </div>
         </Section>
 
         {/* Account */}

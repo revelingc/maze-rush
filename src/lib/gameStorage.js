@@ -139,12 +139,14 @@ export function loadSettings() {
         steerDeadZone: num(p.steerDeadZone, 8),
         steerSensitivity: num(p.steerSensitivity, 1),
         steerCurve: curve,
+        musicEnabled: p.musicEnabled !== false,
+        musicVolume: num(p.musicVolume, 0.6),
       };
     }
   } catch (e) {
     /* ignore */
   }
-  return { hapticsEnabled: true, vibrationAmount: 30, colorblind: false, reducedMotion: false, account: null, steerDeadZone: 8, steerSensitivity: 1, steerCurve: "linear" };
+  return { hapticsEnabled: true, vibrationAmount: 30, colorblind: false, reducedMotion: false, account: null, steerDeadZone: 8, steerSensitivity: 1, steerCurve: "linear", musicEnabled: true, musicVolume: 0.6 };
 }
 
 export function saveSettings(s) {
