@@ -17,6 +17,7 @@ import { purchaseProduct } from "@/lib/nativePurchase";
 import { getTrail, TRAILS } from "@/lib/trails";
 import { shareResult } from "@/lib/shareUtils";
 import { getLevelConfig } from "@/lib/mazeGenerator";
+import { getBiome } from "@/lib/biomes";
 import { generateGoofyName, containsProfanity } from "@/lib/nameUtils";
 import { getSkin } from "@/lib/skins";
 import StatsScreen from "@/components/maze/StatsScreen";
@@ -343,6 +344,7 @@ export default function Home() {
 
   const skinObj = getSkin(skin);
   const cfg = getLevelConfig(level, cycle);
+  const biome = getBiome(cycle);
   const cb = settings.colorblind;
   const effHazard = cb ? "#F0E442" : hazardColor;
   const effLaser = cb ? "#0072B2" : laserColor;
@@ -434,6 +436,7 @@ export default function Home() {
         streak={streak}
         bestStreak={bestStreak}
         difficultyPct={cfg.difficultyPct}
+        biomeName={biome.name}
         onOpenBoard={() => setShowBoard(true)}
       />
 
@@ -520,7 +523,7 @@ export default function Home() {
   );
 }
 
-function Header({ level, lives, streak, bestStreak, difficultyPct, onOpenBoard }) {
+function Header({ level, lives, streak, bestStreak, difficultyPct, onOpenBoard, biomeName }) {
   return (
     <header className="px-5 safe-pt-5">
       <div className="flex items-center justify-between">
@@ -532,7 +535,10 @@ function Header({ level, lives, streak, bestStreak, difficultyPct, onOpenBoard }
             <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/40">
               Maze Rush
             </p>
-            <p className="text-sm font-semibold">Level {level}</p>
+            <p className="text-sm font-semibold">
+              Lv {level}
+              {biomeName ? <span className="ml-1 text-[11px] font-normal text-white/40">· {biomeName}</span> : null}
+            </p>
           </div>
         </div>
         <button

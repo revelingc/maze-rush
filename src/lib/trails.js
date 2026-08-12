@@ -3,7 +3,7 @@
 // Shooting Star purchase (price 0, unlocked via starOwned).
 
 export const TRAILS = [
-  { id: "bubbles",  name: "Bubbles",  skinId: "default", color: "#5EEAD4", price: 0.99, style: "bubble",   desc: "Translucent bubbles rise and pop behind your dot." },
+  { id: "bubbles",  name: "Bubbles",  skinId: "default", color: "#5EEAD4", price: 0, unlockLevel: 15, style: "bubble",   desc: "Translucent bubbles rise and pop behind your dot. Free at level 15." },
   { id: "mist",     name: "Mist",     skinId: "sky",     color: "#38BDF8", price: 0.99, style: "puff",     desc: "A soft, drifting cloud of misty puffs." },
   { id: "sparkle",  name: "Sparkle",  skinId: "violet",  color: "#A78BFA", price: 0.99, style: "sparkle",  desc: "Shimmering glitter that twinkles and fades." },
   { id: "petals",   name: "Petals",   skinId: "rose",    color: "#FB7185", price: 0.99, style: "petal",    desc: "Delicate flower petals drift down in your wake." },
@@ -18,15 +18,16 @@ export const TRAILS = [
 
 export const getTrail = (id) => TRAILS.find((t) => t.id === id) || null;
 
-export function isTrailUnlocked(trail, starOwned, trailsOwned = []) {
+export function isTrailUnlocked(trail, starOwned = false, trailsOwned = [], bestLevel = 0) {
   if (!trail) return false;
   if (trail.star) return !!starOwned;
+  if (trail.unlockLevel) return bestLevel >= trail.unlockLevel;
   return trailsOwned.includes(trail.id);
 }
 
 const R = () => (Math.random() - 0.5);
 
-function emitParticle(st, x, y) {
+function emitParticle(st, x, y, sFac = 0) {
   const style = st.trailStyle;
   const color = st.trailColor || "#5EEAD4";
   const cs = st.cs;
@@ -76,6 +77,8 @@ function emitParticle(st, x, y) {
     default:
       return;
   }
+  // Speed-reactive: faster movement grows the particles for a richer wake.
+  if (sFac) p.size *= 1 + sFac * 0.45;
   st.trailParticles.push(p);
   if (st.trailParticles.length > 150) st.trailParticles.shift();
 }
@@ -96,11 +99,16 @@ export function updateTrail(st, dt) {
   const ball = st.ball;
   const sp = Math.hypot(ball.vx, ball.vy);
   if (sp < 8 || !st.moved) return;
-  const n =
+  // Speed-reactive: faster movement spawns more (and larger) trail particles,
+  // so fast runs leave a richer, brighter wake.
+  const spMax = (st.cs || 1) * 11;
+  const sFac = Math.min(1, sp / spMax);
+  const base =
     st.trailStyle === "stardust" || st.trailStyle === "sparkle" ? 3
     : st.trailStyle === "galaxy" ? 2
     : 1;
-  for (let i = 0; i < n; i++) emitParticle(st, ball.x, ball.y);
+  const n = Math.max(1, Math.round(base * (1 + sFac * 2)));
+  for (let i = 0; i < n; i++) emitParticle(st, ball.x, ball.y, sFac);
 }
 
 function drawSpark(ctx, cx, cy, r, rot) {

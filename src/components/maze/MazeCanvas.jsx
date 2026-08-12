@@ -11,6 +11,8 @@ import {
 } from "@/lib/mazeGenerator";
 import { renderGame } from "@/lib/mazeRenderer";
 import { updateTrail } from "@/lib/trails";
+import { getBiome } from "@/lib/biomes";
+import { initAmbient, updateAmbient, updateBurst, spawnBurst } from "@/lib/particles";
 
 const VISIBLE_CELLS = 7; // cells shown across the viewport width
 
@@ -57,6 +59,7 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
   useEffect(() => {
     if (!canvasRef.current || !containerRef.current) return;
     const cfg = getLevelConfig(level, cycle || 1);
+    const biome = getBiome(cycle || 1);
     const loops = cfg.cols + cfg.hazards * 3;
     const maze = generateMaze(cfg.cols, cfg.rows, loops);
     const dims = fitCanvas();
@@ -167,8 +170,13 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       deadZone: deadZone,
       sensitivity: sensitivity,
       gamma: CURVE_GAMMA[curve] ?? 1,
+      biome,
+      ambientParticles: [],
+      burstParticles: [],
+      flash: null,
     };
 
+    initAmbient(stateRef.current, biome);
     deadRef.current = false;
     if (pointer) pointer.current.active = false;
     lastRef.current = performance.now();
@@ -192,6 +200,7 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       for (const hu of st.hunters) { hu.x *= ratio; hu.y *= ratio; hu.r = newCs * 0.28; }
       for (const p of st.trailParticles) { p.x *= ratio; p.y *= ratio; p.size *= ratio; }
       st.ctx = ctx;
+      if (st.biome) initAmbient(st, st.biome);
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -222,6 +231,9 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       if (runningRef.current && !deadRef.current) {
         updateGame(st, dt, pointer, deadRef, cbRef);
       }
+      updateBurst(st, dt);
+      updateAmbient(st, dt);
+      if (st.flash && st.flash.t > 0) st.flash.t -= dt;
       renderGame(st.ctx, st);
     };
     rafRef.current = requestAnimationFrame(loop);
@@ -251,6 +263,12 @@ function updateCamera(st) {
 
 function killPlayer(st, pointer, deadRef, cbRef) {
   const { cs, ball } = st;
+  // Impact: shard burst at the death site + a brief screen flash.
+  spawnBurst(st, ball.x, ball.y, {
+    count: 30, speed: 280, life: 0.7, world: true,
+    color: st.hazardColor || "#FB7185", shapes: ["circle", "spark"],
+  });
+  st.flash = { color: st.hazardColor || "#FB7185", t: 0.45 };
   st.invuln = 1.5;
   ball.x = cs / 2;
   ball.y = cs / 2;
@@ -351,6 +369,16 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
   }
 
   if (Math.hypot(ball.x - st.exitX, ball.y - st.exitY) < cs * 0.4) {
+    const accent = (st.biome && st.biome.accent) || "#5EEAD4";
+    spawnBurst(st, st.exitX, st.exitY, {
+      count: 44, speed: 320, life: 0.9, world: true,
+      color: accent, shapes: ["spark", "circle"],
+    });
+    spawnBurst(st, st.w / 2, st.h / 2, {
+      count: 20, speed: 360, life: 0.8, world: false,
+      color: accent, shapes: ["spark"],
+    });
+    st.flash = { color: accent, t: 0.5 };
     deadRef.current = true;
     cbRef.current.onLevelComplete(st.timerMax - st.timer);
   }

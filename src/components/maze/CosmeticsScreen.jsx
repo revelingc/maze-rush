@@ -1,7 +1,7 @@
 import React from "react";
 import { ChevronLeft, Lock, Check } from "lucide-react";
 import { DOT_SKINS, isSkinUnlocked } from "@/lib/skins";
-import { TRAILS } from "@/lib/trails";
+import { TRAILS, isTrailUnlocked } from "@/lib/trails";
 import DotPreview from "@/components/maze/DotPreview";
 import StoreBundles from "@/components/maze/StoreBundles";
 
@@ -121,7 +121,8 @@ export default function CosmeticsScreen({
           <div className="grid grid-cols-3 gap-3">
             {TRAILS.map((t) => {
               const isStar = !!t.star;
-              const owned = isStar ? !!starOwned : trailsOwned.includes(t.id);
+              const levelGated = !!t.unlockLevel;
+              const owned = isTrailUnlocked(t, starOwned, trailsOwned, bestLevel);
               const selected = t.id === trail;
               return (
                 <div
@@ -151,6 +152,10 @@ export default function CosmeticsScreen({
                     >
                       {selected ? "Selected" : "Select"}
                     </button>
+                  ) : levelGated ? (
+                    <span className="rounded-full bg-white/5 px-3 py-1 text-[11px] font-semibold text-white/40">
+                      Lv {t.unlockLevel}
+                    </span>
                   ) : (
                     <button
                       onClick={() => onBuyTrail(t)}
@@ -163,6 +168,11 @@ export default function CosmeticsScreen({
                   {selected && (
                     <span className="absolute right-2 top-2 text-teal-300">
                       <Check className="h-3.5 w-3.5" />
+                    </span>
+                  )}
+                  {!owned && !isStar && (
+                    <span className="absolute right-2 top-2 text-white/40">
+                      <Lock className="h-3.5 w-3.5" />
                     </span>
                   )}
                 </div>
