@@ -61,6 +61,7 @@ export default function Home() {
   const [bestTimes, setBestTimes] = useState(() => loadBestTimes());
   const [ghosts, setGhosts] = useState(() => loadGhosts());
   const [showLevels, setShowLevels] = useState(false);
+  const [pendingJump, setPendingJump] = useState(null);
   const [lastTime, setLastTime] = useState(null);
   const [settings, setSettings] = useState(() => loadSettings());
 
@@ -204,8 +205,14 @@ export default function Home() {
   };
 
   const onAdComplete = () => {
-    const gain = ad === "premium" ? 10 : 5;
     setAd(null);
+    if (pendingJump != null) {
+      const n = pendingJump;
+      setPendingJump(null);
+      beginPlayAt(n);
+      return;
+    }
+    const gain = ad === "premium" ? 10 : 5;
     setAdUsed(true);
     setLives((l) => l + gain);
     setRunning(true);
@@ -249,7 +256,7 @@ export default function Home() {
     setResetToken((t) => t + 1);
   };
 
-  const startPlayAt = (n) => {
+  const beginPlayAt = (n) => {
     if (settings.musicEnabled) {
       const eng = getMusicEngine();
       eng.setVolume(settings.musicVolume);
@@ -268,6 +275,18 @@ export default function Home() {
     navigate("/play");
     setRunning(true);
     setResetToken((t) => t + 1);
+  };
+
+  // Free-to-play players must watch an ad to jump forward in the level list
+  // (starting at a level past their current run position). Ad-free is exempt.
+  const startPlayAt = (n) => {
+    if (!adFree && n > level) {
+      setPendingJump(n);
+      setAd("leveljump");
+      setShowLevels(false);
+      return;
+    }
+    beginPlayAt(n);
   };
 
   const goHome = () => {

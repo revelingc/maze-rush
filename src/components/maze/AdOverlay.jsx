@@ -23,6 +23,8 @@ export default function AdOverlay({ type, onComplete }) {
   }, [count, onComplete]);
 
   const lives = type === "premium" ? 10 : 5;
+  const isJump = type === "leveljump";
+  const rewardLine = isJump ? "Unlocking your chosen level…" : `Your ${lives} lives are being prepared…`;
 
   return (
     <motion.div
@@ -44,9 +46,7 @@ export default function AdOverlay({ type, onComplete }) {
           )}
         </div>
         <p className="text-sm text-white/60">
-          {count > 0
-            ? `Your ${lives} lives are being prepared…`
-            : "Reward unlocked!"}
+          {count > 0 ? rewardLine : "Reward unlocked!"}
         </p>
       </div>
     </motion.div>
