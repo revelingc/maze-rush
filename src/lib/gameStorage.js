@@ -121,6 +121,35 @@ export function setBestTime(level, seconds) {
   }
 }
 
+const GHOSTS_KEY = "mazerush_ghosts_v1";
+
+export function loadGhosts() {
+  try {
+    const raw = localStorage.getItem(GHOSTS_KEY);
+    const obj = raw ? JSON.parse(raw) : {};
+    return obj && typeof obj === "object" ? obj : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+// Stores the fastest-run path for a level (cell-space coords, resolution-independent).
+// Only overwrites when the new time beats the stored one.
+export function setGhost(level, time, path) {
+  try {
+    const obj = loadGhosts();
+    const prev = obj[level];
+    if (!prev || time < prev.time) {
+      obj[level] = { time, path };
+      localStorage.setItem(GHOSTS_KEY, JSON.stringify(obj));
+      return true;
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
+}
+
 const SETTINGS_KEY = "mazerush_settings_v1";
 
 export function loadSettings() {
@@ -159,7 +188,7 @@ export function saveSettings(s) {
 
 // Clears all locally-stored game data (used by account deletion).
 export function clearAllData() {
-  [KEY, SCORES_KEY, TIMES_KEY, SETTINGS_KEY].forEach((k) => {
+  [KEY, SCORES_KEY, TIMES_KEY, GHOSTS_KEY, SETTINGS_KEY].forEach((k) => {
     try { localStorage.removeItem(k); } catch (e) { /* ignore */ }
   });
 }

@@ -7,12 +7,13 @@ import AdOverlay from "@/components/maze/AdOverlay";
 import GameOverModal from "@/components/maze/GameOverModal";
 import LevelCompleteModal from "@/components/maze/LevelCompleteModal";
 import LeaderboardModal from "@/components/maze/LeaderboardModal";
+import LevelSelectModal from "@/components/maze/LevelSelectModal";
 import NamePromptModal from "@/components/maze/NamePromptModal";
 import ControlPad from "@/components/maze/ControlPad";
 import MainMenu from "@/components/maze/MainMenu";
 import CosmeticsScreen from "@/components/maze/CosmeticsScreen";
 import ObstacleIntroModal from "@/components/maze/ObstacleIntroModal";
-import { loadState, saveState, loadHighScores, addHighScore, loadBestTimes, setBestTime, loadSettings, saveSettings, renamePlayer } from "@/lib/gameStorage";
+import { loadState, saveState, loadHighScores, addHighScore, loadBestTimes, setBestTime, loadSettings, saveSettings, renamePlayer, loadGhosts, setGhost } from "@/lib/gameStorage";
 import { purchaseProduct } from "@/lib/nativePurchase";
 import { getTrail, TRAILS } from "@/lib/trails";
 import { shareResult } from "@/lib/shareUtils";
@@ -58,6 +59,8 @@ export default function Home() {
   const [pendingScore, setPendingScore] = useState(null);
   const [buying, setBuying] = useState(false);
   const [bestTimes, setBestTimes] = useState(() => loadBestTimes());
+  const [ghosts, setGhosts] = useState(() => loadGhosts());
+  const [showLevels, setShowLevels] = useState(false);
   const [lastTime, setLastTime] = useState(null);
   const [settings, setSettings] = useState(() => loadSettings());
 
@@ -138,12 +141,16 @@ export default function Home() {
     }
   }, [level, streak, displayName, checkQualifies, submitScore]);
 
-  const handleLevelComplete = useCallback((elapsed) => {
+  const handleLevelComplete = useCallback((elapsed, path) => {
     setRunning(false);
     setStreak((s) => s + 1);
     setBestStreak((b) => Math.max(b, streak + 1));
     const secs = Math.max(0, elapsed || 0);
     const isRecord = setBestTime(level, secs);
+    if (isRecord && path && path.length) {
+      setGhost(level, secs, path);
+      setGhosts(loadGhosts());
+    }
     setLastTime({ secs, isRecord });
     setBestTimes(loadBestTimes());
     setModal("levelcomplete");
@@ -234,6 +241,27 @@ export default function Home() {
       setStreak(0);
       setAdUsed(false);
     }
+    setModal(null);
+    setAd(null);
+    navigate("/play");
+    setRunning(true);
+    setResetToken((t) => t + 1);
+  };
+
+  const startPlayAt = (n) => {
+    if (settings.musicEnabled) {
+      const eng = getMusicEngine();
+      eng.setVolume(settings.musicVolume);
+      eng.setEnabled(true);
+      eng.start();
+    }
+    setLevel(n);
+    if (lives <= 0) {
+      setLives(adFree ? 10 : 5);
+      setStreak(0);
+      setAdUsed(false);
+    }
+    setShowLevels(false);
     setModal(null);
     setAd(null);
     navigate("/play");
@@ -359,6 +387,7 @@ export default function Home() {
           bestStreak={bestStreak}
           skinObj={skinObj}
           onPlay={startPlay}
+          onLevels={() => setShowLevels(true)}
           onCosmetics={() => navigate("/cosmetics")}
           onBoard={() => setShowBoard(true)}
           onStats={() => navigate("/stats")}
@@ -369,6 +398,11 @@ export default function Home() {
         <AnimatePresence>
           {showBoard && (
             <LeaderboardModal onClose={() => setShowBoard(false)} displayName={displayName} onRename={handleRename} />
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {showLevels && (
+            <LevelSelectModal bestLevel={bestLevel} onSelect={startPlayAt} onClose={() => setShowLevels(false)} />
           )}
         </AnimatePresence>
       </div>
@@ -465,6 +499,7 @@ export default function Home() {
               trailStyle={trailCfg?.style || null}
               trailColor={trailCfg?.color || null}
               cycle={cycle}
+              ghostPath={ghosts[level]?.path || null}
               deadZone={settings.steerDeadZone}
               sensitivity={settings.steerSensitivity}
               curve={settings.steerCurve}

@@ -230,6 +230,20 @@ export function renderGame(ctx, st) {
     ctx.restore();
   }
 
+  // fastest-run ghost (behind the live ball)
+  if (st.ghost) {
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    ctx.strokeStyle = "#67E8F9";
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = "#67E8F9";
+    ctx.lineWidth = Math.max(2, st.ball.r * 0.18);
+    ctx.beginPath();
+    ctx.arc(st.ghost.x, st.ghost.y, st.ball.r * 0.85, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   // trail (behind ball)
   drawTrail(ctx, st);
 

@@ -3,6 +3,18 @@
 export const DX = [0, 1, 0, -1]; // top, right, bottom, left
 export const DY = [-1, 0, 1, 0];
 
+// Deterministic PRNG so a given level always generates the same maze — this
+// makes best times and replay ghosts meaningful (same course every attempt).
+export function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 // Levels that introduce a new obstacle (used for the intro overlay).
 export const INTRO_LEVELS = { 3: "hazards", 12: "lasers", 24: "hunters" };
 
@@ -17,7 +29,7 @@ const DIRS = [
  * Generates a perfect maze using recursive backtracking.
  * Each cell has walls: [top, right, bottom, left] (booleans).
  */
-export function generateMaze(cols, rows, loops = 0) {
+export function generateMaze(cols, rows, loops = 0, rng = Math.random) {
   const grid = [];
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
@@ -40,7 +52,7 @@ export function generateMaze(cols, rows, loops = 0) {
     }
     if (neighbors.length > 0) {
       const { cell: next, dir } =
-        neighbors[Math.floor(Math.random() * neighbors.length)];
+        neighbors[Math.floor(rng() * neighbors.length)];
       current.walls[dir.wall] = false;
       next.walls[dir.opp] = false;
       stack.push(current);
@@ -59,9 +71,9 @@ export function generateMaze(cols, rows, loops = 0) {
     let guard = 0;
     while (added < loops && guard < loops * 12) {
       guard++;
-      const cx = Math.floor(Math.random() * cols);
-      const cy = Math.floor(Math.random() * rows);
-      const dir = Math.floor(Math.random() * 4);
+      const cx = Math.floor(rng() * cols);
+      const cy = Math.floor(rng() * rows);
+      const dir = Math.floor(rng() * 4);
       if (dir === 0 && cy === 0) continue;
       if (dir === 1 && cx === cols - 1) continue;
       if (dir === 2 && cy === rows - 1) continue;

@@ -8,6 +8,7 @@ import {
   updateHunter,
   laserSegment,
   pointSegDist,
+  mulberry32,
 } from "@/lib/mazeGenerator";
 import { renderGame } from "@/lib/mazeRenderer";
 import { updateTrail } from "@/lib/trails";
@@ -26,7 +27,7 @@ const VISIBLE_CELLS = 7; // cells shown across the viewport width
  */
 const CURVE_GAMMA = { linear: 1, smooth: 1.6, precise: 0.6 };
 
-export default function MazeCanvas({ level, running, resetToken, onLevelComplete, onLifeLost, pointer, skinColor, skinStar, skinBlackhole, wallColor, bgColor, hazardColor, laserColor, hunterColor, reducedMotion, trailStyle, trailColor, cycle, deadZone = 8, sensitivity = 1, curve = "linear" }) {
+export default function MazeCanvas({ level, running, resetToken, onLevelComplete, onLifeLost, pointer, skinColor, skinStar, skinBlackhole, wallColor, bgColor, hazardColor, laserColor, hunterColor, reducedMotion, trailStyle, trailColor, cycle, ghostPath, deadZone = 8, sensitivity = 1, curve = "linear" }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const stateRef = useRef(null);
@@ -61,7 +62,8 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
     const cfg = getLevelConfig(level, cycle || 1);
     const biome = getBiome(cycle || 1);
     const loops = cfg.cols + cfg.hazards * 3;
-    const maze = generateMaze(cfg.cols, cfg.rows, loops);
+    const rng = mulberry32(level * 7919 + (cycle || 1) * 3571 + 12345);
+    const maze = generateMaze(cfg.cols, cfg.rows, loops, rng);
     const dims = fitCanvas();
     if (!dims) return;
     const { w, h, ctx } = dims;
@@ -173,6 +175,9 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       biome,
       burstParticles: [],
       flash: null,
+      ghostRecord: [],
+      recordT: 0,
+      ghost: ghostPath && ghostPath.length ? { path: ghostPath, idx: 0, x: ghostPath[0].cx * cs, y: ghostPath[0].cy * cs } : null,
     };
 
     deadRef.current = false;
@@ -313,6 +318,13 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
       killPlayer(st, pointer, deadRef, cbRef);
       return;
     }
+    // record the run path (cell-space) for the fastest-time ghost
+    st.recordT += dt;
+    if (st.recordT >= 0.05) {
+      st.recordT -= 0.05;
+      st.ghostRecord.push({ t: st.timerMax - st.timer, cx: ball.x / cs, cy: ball.y / cs });
+      if (st.ghostRecord.length > 2000) st.ghostRecord.shift();
+    }
   }
 
   // substepped movement + collision (prevents tunneling at high speed)
@@ -327,6 +339,22 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
   ball.y = clamp(ball.y, ball.r, st.worldH - ball.r);
 
   updateCamera(st);
+
+  // replay the fastest-run ghost in lockstep with the player's elapsed time
+  if (st.ghost) {
+    const gElapsed = st.moved ? st.timerMax - st.timer : 0;
+    const gp = st.ghost.path;
+    let i = st.ghost.idx || 0;
+    if (gp[i] && gElapsed < gp[i].t) i = 0;
+    while (i < gp.length - 1 && gp[i + 1].t <= gElapsed) i++;
+    st.ghost.idx = i;
+    const a = gp[i];
+    const b = gp[Math.min(i + 1, gp.length - 1)];
+    const span = b.t - a.t || 1;
+    const f = Math.max(0, Math.min(1, (gElapsed - a.t) / span));
+    st.ghost.x = (a.cx + (b.cx - a.cx) * f) * cs;
+    st.ghost.y = (a.cy + (b.cy - a.cy) * f) * cs;
+  }
 
   const odt = st.reducedMotion ? dt * 0.5 : dt;
   for (const h of hazards) updateHazard(h, odt, maze, cs);
@@ -376,6 +404,6 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
     });
     st.flash = { color: accent, t: 0.5 };
     deadRef.current = true;
-    cbRef.current.onLevelComplete(st.timerMax - st.timer);
+    cbRef.current.onLevelComplete(st.timerMax - st.timer, st.ghostRecord);
   }
 }
