@@ -5,7 +5,7 @@ import { Film, Sparkles } from "lucide-react";
 /**
  * Simulated ad overlay. A real ad network (e.g. AdMob) requires a native SDK
  * and cannot run inside the web build — this stands in for that flow.
- * type: "standard" (+3 lives) | "premium" (+6 lives)
+ * type: "standard" (+5 lives) | "premium" (+10 lives)
  */
 export default function AdOverlay({ type, onComplete }) {
   const [count, setCount] = useState(5);
@@ -22,7 +22,7 @@ export default function AdOverlay({ type, onComplete }) {
     }
   }, [count, onComplete]);
 
-  const lives = type === "premium" ? 6 : 3;
+  const lives = type === "premium" ? 10 : 5;
 
   return (
     <motion.div
