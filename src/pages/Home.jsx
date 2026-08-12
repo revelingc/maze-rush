@@ -97,12 +97,13 @@ export default function Home() {
     if (cfg.hazards > 0) present.push("hazards");
     if (cfg.lasers > 0) present.push("lasers");
     if (cfg.hunters > 0) present.push("hunters");
-    const key = present.find((k) => !seenIntros.includes(k));
+    const ghostKey = ghosts[level]?.path && !seenIntros.includes("ghost") ? "ghost" : null;
+    const key = present.find((k) => !seenIntros.includes(k)) || ghostKey;
     if (key) {
       setIntro(key);
       setRunning(false);
     }
-  }, [screen, level, cycle, seenIntros]);
+  }, [screen, level, cycle, seenIntros, ghosts]);
 
   const checkQualifies = useCallback((reachedLevel, streakVal) => {
     const scores = loadHighScores();

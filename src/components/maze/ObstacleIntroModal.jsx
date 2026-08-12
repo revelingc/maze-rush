@@ -19,9 +19,25 @@ const CONTENT = {
     color: "#A855F7",
     body: "These orbs track you through the maze. Keep moving and use the loops to break their line on you.",
   },
+  ghost: {
+    title: "Your Ghost",
+    color: "#67E8F9",
+    label: "Fastest Time",
+    body: "That glowing ring replays your fastest run on this level. Chase it to beat your best time — it never blocks you, it just shows the way.",
+  },
 };
 
 function Preview({ kind, color }) {
+  if (kind === "ghost") {
+    return (
+      <div className="flex h-16 items-center justify-center">
+        <span
+          className="rounded-full border-4"
+          style={{ width: 30, height: 30, borderColor: color, boxShadow: `0 0 12px ${color}` }}
+        />
+      </div>
+    );
+  }
   if (kind === "lasers") {
     return (
       <div className="flex h-16 items-center justify-center gap-3">
@@ -56,7 +72,7 @@ export default function ObstacleIntroModal({ obstacleKey, onContinue }) {
         exit={{ y: 8, scale: 0.98 }}
         className="w-full max-w-xs rounded-2xl bg-slate-900 p-5 ring-1 ring-white/10"
       >
-        <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/40">New Obstacle</p>
+        <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/40">{c.label || "New Obstacle"}</p>
         <h2 className="mt-0.5 text-lg font-semibold" style={{ color: c.color }}>
           {c.title}
         </h2>
