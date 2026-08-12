@@ -1,7 +1,7 @@
 {
-  "name": "Maze Rush — Drag to Solve",
+  "name": "Maze Rush",
   "short_name": "Maze Rush",
-  "description": "Steer a glowing orb through fast, procedurally generated labyrinths. Beat the clock, climb the leaderboard, chase your streak.",
+  "description": "Drag to steer a glowing orb through fast, procedurally generated labyrinths. Beat the clock, climb the leaderboard, chase your streak.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -11,10 +11,16 @@
   "categories": ["games", "arcade", "puzzle"],
   "icons": [
     {
-      "src": "https://base44.com/logo_v2.svg",
+      "src": "/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }
