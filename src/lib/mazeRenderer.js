@@ -3,7 +3,7 @@
 
 import { laserSegment } from "@/lib/mazeGenerator";
 import { drawTrail } from "@/lib/trails";
-import { drawAmbient, drawBurst } from "@/lib/particles";
+import { drawBurst } from "@/lib/particles";
 
 function drawStar(ctx, cx, cy, r, now) {
   const rot = now / 600;
@@ -91,16 +91,6 @@ export function renderGame(ctx, st) {
   ctx.clearRect(0, 0, w, h);
   ctx.fillStyle = st.bgColor || "#0B0F1A";
   ctx.fillRect(0, 0, w, h);
-
-  // biome atmosphere — drifting ambient particles + a mood tint per cycle.
-  drawAmbient(ctx, st);
-  if (st.biome && st.biome.tint) {
-    ctx.save();
-    ctx.globalAlpha = 0.16;
-    ctx.fillStyle = st.biome.tint;
-    ctx.fillRect(0, 0, w, h);
-    ctx.restore();
-  }
 
   // ---- world layer (scrolled) ----
   ctx.save();

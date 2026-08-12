@@ -12,7 +12,7 @@ import {
 import { renderGame } from "@/lib/mazeRenderer";
 import { updateTrail } from "@/lib/trails";
 import { getBiome } from "@/lib/biomes";
-import { initAmbient, updateAmbient, updateBurst, spawnBurst } from "@/lib/particles";
+import { updateBurst, spawnBurst } from "@/lib/particles";
 
 const VISIBLE_CELLS = 7; // cells shown across the viewport width
 
@@ -171,12 +171,10 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       sensitivity: sensitivity,
       gamma: CURVE_GAMMA[curve] ?? 1,
       biome,
-      ambientParticles: [],
       burstParticles: [],
       flash: null,
     };
 
-    initAmbient(stateRef.current, biome);
     deadRef.current = false;
     if (pointer) pointer.current.active = false;
     lastRef.current = performance.now();
@@ -200,7 +198,6 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
       for (const hu of st.hunters) { hu.x *= ratio; hu.y *= ratio; hu.r = newCs * 0.28; }
       for (const p of st.trailParticles) { p.x *= ratio; p.y *= ratio; p.size *= ratio; }
       st.ctx = ctx;
-      if (st.biome) initAmbient(st, st.biome);
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -232,7 +229,6 @@ export default function MazeCanvas({ level, running, resetToken, onLevelComplete
         updateGame(st, dt, pointer, deadRef, cbRef);
       }
       updateBurst(st, dt);
-      updateAmbient(st, dt);
       if (st.flash && st.flash.t > 0) st.flash.t -= dt;
       renderGame(st.ctx, st);
     };
