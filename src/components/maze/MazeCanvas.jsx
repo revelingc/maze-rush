@@ -359,7 +359,7 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
   const odt = st.reducedMotion ? dt * 0.5 : dt;
   for (const h of hazards) updateHazard(h, odt, maze, cs);
   for (const l of lasers) updateLaser(l, odt);
-  for (const hu of hunters) updateHunter(hu, odt, ball, maze, cs);
+  if (st.moved) for (const hu of hunters) updateHunter(hu, odt, ball, maze, cs);
 
   updateTrail(st, dt);
 
