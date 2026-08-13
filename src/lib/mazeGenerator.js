@@ -139,7 +139,7 @@ function ensureEndpointsOpen(grid, cols, rows, idx) {
 export function getLevelConfig(level, cycle = 1) {
   const cycleMult = Math.pow(1.5, cycle - 1); // +50% base per completed 100-level run
   const d = Math.pow(1.02, level - 1) * cycleMult; // 2% harder each level, cycle-scaled
-  const size = Math.min(40, Math.round(10 * Math.pow(1.05, level - 1))); // map grows 5% per level
+  const size = Math.min(40, Math.round(10 * Math.pow(1.03, level - 1))); // map grows 3% per level
   const hazards = level >= 3 ? Math.min(12, Math.floor((level - 1) / 1.3)) : 0;
   const hazardSpeed = Math.min(288, 96 * d);
   // Timer caps at 75s and floors at 50s so every level is completable but
