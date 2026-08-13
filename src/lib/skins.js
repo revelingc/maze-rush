@@ -22,7 +22,7 @@ export const DOT_SKINS = [
   { id: "crimson",  name: "Crimson",  unlockLevel: 85,  color: "#DC2626" },
   { id: "lavender", name: "Lavender", unlockLevel: 90,  color: "#C4B5FD" },
   { id: "slate",    name: "Slate",    unlockLevel: 95,  color: "#94A3B8" },
-  { id: "star",     name: "Shooting Star", unlockLevel: Infinity, color: "#FDE68A", star: true, price: 3.99 },
+  { id: "star",     name: "Shooting Star", unlockLevel: Infinity, color: "#FDE68A", star: true, price: 2.99 },
   { id: "blackhole", name: "Black Hole", unlockLevel: 100, color: "#0B0F1A", blackhole: true },
 ];
 
