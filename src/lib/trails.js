@@ -1,6 +1,6 @@
 // Move-trail cosmetics for Maze Rush. Each colored dot has a matching trail
-// style purchasable for $0.99. The "Stardust" trail is bundled with the
-// Shooting Star purchase (price 0, unlocked via starOwned).
+// style purchasable for $0.99. The "Stardust" trail is $1.99 on its own and
+// is also unlocked by the Shooting Star skin (starOwned).
 
 export const TRAILS = [
   { id: "bubbles",  name: "Bubbles",  skinId: "default", color: "#5EEAD4", price: 0, unlockLevel: 15, style: "bubble",   desc: "Translucent bubbles rise and pop behind your dot. Free at level 15." },
@@ -13,14 +13,14 @@ export const TRAILS = [
   { id: "pixels",   name: "Pixels",   skinId: "lime",    color: "#A3E635", price: 0.99, style: "pixel",    desc: "Blocky 8-bit pixels stack up behind your dot." },
   { id: "flames",   name: "Flames",   skinId: "orange",  color: "#FB923C", price: 0.99, style: "flame",    desc: "Flickering flame tongues lick up from your path." },
   { id: "galaxy",   name: "Galaxy",   skinId: "indigo",  color: "#818CF8", price: 0.99, style: "galaxy",   desc: "Swirling star fragments from a distant galaxy." },
-  { id: "stardust", name: "Stardust", skinId: "star",    color: "#FDE68A", price: 0,    style: "stardust", desc: "A golden shower of stardust. Bundled with Shooting Star.", star: true },
+  { id: "stardust", name: "Stardust", skinId: "star",    color: "#FDE68A", price: 1.99, style: "stardust", desc: "A golden shower of stardust trailing your dot.", star: true },
 ];
 
 export const getTrail = (id) => TRAILS.find((t) => t.id === id) || null;
 
 export function isTrailUnlocked(trail, starOwned = false, trailsOwned = [], bestLevel = 0) {
   if (!trail) return false;
-  if (trail.star) return !!starOwned;
+  if (trail.star) return !!starOwned || trailsOwned.includes(trail.id);
   if (trail.unlockLevel) return bestLevel >= trail.unlockLevel;
   return trailsOwned.includes(trail.id);
 }

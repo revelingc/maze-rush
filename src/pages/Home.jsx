@@ -355,7 +355,7 @@ export default function Home() {
         if (res?.reason === "unavailable") alert("In-app purchases are available in the installed app.");
         return;
       }
-      const allTrailIds = TRAILS.filter((t) => !t.star).map((t) => t.id);
+      const allTrailIds = TRAILS.map((t) => t.id);
       if (bundleId === "bundle_star_stardust") {
         setStarOwned(true);
       } else if (bundleId === "bundle_consumables") {

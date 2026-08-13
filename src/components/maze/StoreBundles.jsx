@@ -9,7 +9,7 @@ const BUNDLES = [
   {
     id: "bundle_star_stardust",
     name: "Shooting Star Skin + Stardust Trail",
-    price: 4.49,
+    price: 3.99,
     desc: "Unlock the Shooting Star dot skin and its golden Stardust trail together.",
     icon: "star",
     accent: "amber",
@@ -17,7 +17,7 @@ const BUNDLES = [
   {
     id: "bundle_consumables",
     name: "Ad-Free + All Trails",
-    price: 7.99,
+    price: 6.99,
     desc: "Unlock ad-free — ten lives, no ads — plus every move trail.",
     icon: "shield",
     accent: "emerald",
@@ -25,7 +25,7 @@ const BUNDLES = [
   {
     id: "bundle_everything",
     name: "Ad-Free + All Trails + Star Skin",
-    price: 9.99,
+    price: 8.99,
     desc: "Unlock everything: ad-free, every move trail, and the Shooting Star skin.",
     icon: "crown",
     accent: "violet",

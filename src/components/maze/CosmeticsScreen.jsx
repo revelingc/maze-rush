@@ -137,15 +137,7 @@ export default function CosmeticsScreen({
                   <TrailPreview trail={t} />
                   <span className="text-xs font-medium">{t.name}</span>
                   <p className="text-[10px] leading-tight text-white/40 text-center">{t.desc}</p>
-                  {isStar && !starOwned ? (
-                    <button
-                      onClick={onBuyStar}
-                      disabled={buying}
-                      className="rounded-full bg-amber-400 px-3 py-1 text-[11px] font-semibold text-amber-950 transition hover:bg-amber-300 disabled:opacity-60"
-                    >
-                      {buying ? "…" : "Star $3.99"}
-                    </button>
-                  ) : owned ? (
+                  {owned ? (
                     <button
                       onClick={() => setTrail(selected ? null : t.id)}
                       className="text-[10px] text-white/50 hover:text-white"
