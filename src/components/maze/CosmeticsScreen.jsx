@@ -11,6 +11,8 @@ const OBSTACLE_PRESETS = ["#FB7185", "#22D3EE", "#A855F7", "#F59E0B", "#34D399",
 
 export default function CosmeticsScreen({
   bestLevel,
+  confirmedShares,
+  onGoShare,
   skin,
   setSkin,
   wallColor,
@@ -122,7 +124,8 @@ export default function CosmeticsScreen({
             {TRAILS.map((t) => {
               const isStar = !!t.star;
               const levelGated = !!t.unlockLevel;
-              const owned = isTrailUnlocked(t, starOwned, trailsOwned, bestLevel);
+              const shareGated = !!t.shareUnlock;
+              const owned = isTrailUnlocked(t, starOwned, trailsOwned, bestLevel, confirmedShares);
               const selected = t.id === trail;
               return (
                 <div
@@ -143,6 +146,13 @@ export default function CosmeticsScreen({
                       className="text-[10px] text-white/50 hover:text-white"
                     >
                       {selected ? "Selected" : "Select"}
+                    </button>
+                  ) : shareGated ? (
+                    <button
+                      onClick={onGoShare}
+                      className="rounded-full bg-pink-400/20 px-3 py-1 text-[11px] font-semibold text-pink-200 ring-1 ring-pink-300/30 transition hover:bg-pink-400/30"
+                    >
+                      {confirmedShares}/{t.unlockShares} shares
                     </button>
                   ) : levelGated ? (
                     <span className="rounded-full bg-white/5 px-3 py-1 text-[11px] font-semibold text-white/40">

@@ -186,9 +186,58 @@ export function saveSettings(s) {
   }
 }
 
+const SHARES_KEY = "mazerush_shares_v1";
+
+export const SHARES_TO_UNLOCK_HEARTS = 10;
+
+// Ambiguous chars (0/O, 1/I) removed so codes read cleanly when shared aloud.
+const SHARE_ALPHA = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+function genShareCode() {
+  let s = "";
+  for (let i = 0; i < 6; i++) s += SHARE_ALPHA[Math.floor(Math.random() * SHARE_ALPHA.length)];
+  return s;
+}
+
+export function loadShares() {
+  try {
+    const raw = localStorage.getItem(SHARES_KEY);
+    const p = raw ? JSON.parse(raw) : {};
+    if (typeof p !== "object" || !p) return { code: genShareCode(), confirmed: 0 };
+    if (!p.code || typeof p.code !== "string") p.code = genShareCode();
+    const c = Number(p.confirmed);
+    p.confirmed = Number.isFinite(c) && c >= 0 ? Math.floor(c) : 0;
+    return p;
+  } catch (e) {
+    return { code: genShareCode(), confirmed: 0 };
+  }
+}
+
+export function saveShares(s) {
+  try { localStorage.setItem(SHARES_KEY, JSON.stringify(s)); } catch (e) { /* ignore */ }
+}
+
+// Lazily generates + persists a stable share code for this device.
+export function getShareCode() {
+  const s = loadShares();
+  saveShares(s);
+  return s.code;
+}
+
+export function getConfirmedShares() {
+  return loadShares().confirmed || 0;
+}
+
+// Increments the confirmed-share count and returns the new total.
+export function addConfirmedShare() {
+  const s = loadShares();
+  s.confirmed = (s.confirmed || 0) + 1;
+  saveShares(s);
+  return s.confirmed;
+}
+
 // Clears all locally-stored game data (used by account deletion).
 export function clearAllData() {
-  [KEY, SCORES_KEY, TIMES_KEY, GHOSTS_KEY, SETTINGS_KEY].forEach((k) => {
+  [KEY, SCORES_KEY, TIMES_KEY, GHOSTS_KEY, SETTINGS_KEY, SHARES_KEY].forEach((k) => {
     try { localStorage.removeItem(k); } catch (e) { /* ignore */ }
   });
 }

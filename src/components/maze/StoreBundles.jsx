@@ -3,7 +3,8 @@ import { Star, ShieldCheck, Crown, Check, Sparkles } from "lucide-react";
 import { TRAILS } from "@/lib/trails";
 
 // Paid, non-star trails (Stardust is unlocked via the Shooting Star bundle).
-const PAID_TRAILS = TRAILS.filter((t) => !t.star && t.price > 0);
+// Hearts is unlock-by-share (not for sale), so bundles never grant it.
+const PAID_TRAILS = TRAILS.filter((t) => !t.star && !t.shareUnlock && t.price > 0);
 
 const BUNDLES = [
   {

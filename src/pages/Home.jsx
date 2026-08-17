@@ -13,7 +13,7 @@ import ControlPad from "@/components/maze/ControlPad";
 import MainMenu from "@/components/maze/MainMenu";
 import CosmeticsScreen from "@/components/maze/CosmeticsScreen";
 import ObstacleIntroModal from "@/components/maze/ObstacleIntroModal";
-import { loadState, saveState, loadHighScores, addHighScore, loadBestTimes, setBestTime, loadSettings, saveSettings, renamePlayer, loadGhosts, setGhost } from "@/lib/gameStorage";
+import { loadState, saveState, loadHighScores, addHighScore, loadBestTimes, setBestTime, loadSettings, saveSettings, renamePlayer, loadGhosts, setGhost, getConfirmedShares } from "@/lib/gameStorage";
 import { purchaseProduct } from "@/lib/nativePurchase";
 import { getTrail, TRAILS } from "@/lib/trails";
 import { shareResult } from "@/lib/shareUtils";
@@ -22,6 +22,7 @@ import { getBiome } from "@/lib/biomes";
 import { generateGoofyName, containsProfanity } from "@/lib/nameUtils";
 import { getSkin } from "@/lib/skins";
 import StatsScreen from "@/components/maze/StatsScreen";
+import ShareScreen from "@/components/maze/ShareScreen";
 import SettingsScreen from "@/components/maze/SettingsScreen";
 import { useGameMusic } from "@/hooks/useGameMusic";
 import { getMusicEngine } from "@/lib/musicEngine";
@@ -64,6 +65,7 @@ export default function Home() {
   const [pendingJump, setPendingJump] = useState(null);
   const [lastTime, setLastTime] = useState(null);
   const [settings, setSettings] = useState(() => loadSettings());
+  const [confirmedShares, setConfirmedShares] = useState(() => getConfirmedShares());
 
   const livesRef = useRef(lives);
   livesRef.current = lives;
@@ -385,6 +387,8 @@ export default function Home() {
     await shareResult({ level, streak, bestStreak });
   }, [level, streak, bestStreak]);
 
+  const handleShareConfirmed = useCallback((n) => setConfirmedShares(n), []);
+
   const handleAccount = useCallback((account) => {
     setSettings((s) => ({ ...s, account }));
     if (account?.name && !containsProfanity(account.name)) setDisplayName(account.name);
@@ -409,6 +413,7 @@ export default function Home() {
           onPlay={startPlay}
           onLevels={() => setShowLevels(true)}
           onCosmetics={() => navigate("/cosmetics")}
+          onShare={() => navigate("/share")}
           onBoard={() => setShowBoard(true)}
           onStats={() => navigate("/stats")}
           onSettings={() => navigate("/settings")}
@@ -433,6 +438,8 @@ export default function Home() {
     return (
       <CosmeticsScreen
         bestLevel={bestLevel}
+        confirmedShares={confirmedShares}
+        onGoShare={() => navigate("/share")}
         skin={skin}
         setSkin={setSkin}
         wallColor={wallColor}
@@ -478,6 +485,16 @@ export default function Home() {
         bestTimes={bestTimes}
         onShare={handleShare}
         onBack={() => navigate(-1)}
+      />
+    );
+  }
+
+  if (screen === "/share") {
+    return (
+      <ShareScreen
+        confirmedShares={confirmedShares}
+        onConfirmed={handleShareConfirmed}
+        onBack={() => navigate("/")}
       />
     );
   }

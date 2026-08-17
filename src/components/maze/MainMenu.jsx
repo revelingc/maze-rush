@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Play, Palette, BarChart3, Zap, Trophy, Flame, ShieldCheck, X, Clock, Settings as SettingsIcon, Layers } from "lucide-react";
+import { Play, Palette, BarChart3, Zap, Trophy, Flame, ShieldCheck, X, Clock, Settings as SettingsIcon, Layers, Share2 } from "lucide-react";
 import DotPreview from "@/components/maze/DotPreview";
 
-export default function MainMenu({ bestLevel, bestStreak, skinObj, onPlay, onLevels, onCosmetics, onBoard, onStats, onSettings, adFree, onBuyAdFree }) {
+export default function MainMenu({ bestLevel, bestStreak, skinObj, onPlay, onLevels, onCosmetics, onShare, onBoard, onStats, onSettings, adFree, onBuyAdFree }) {
   const [confirmAdFree, setConfirmAdFree] = useState(false);
   return (
     <div className="relative flex h-[100dvh] flex-col bg-slate-950 px-6 text-white safe-pt safe-pb">
@@ -39,6 +39,9 @@ export default function MainMenu({ bestLevel, bestStreak, skinObj, onPlay, onLev
           </MenuButton>
           <MenuButton onClick={onCosmetics}>
             <Palette className="h-5 w-5" /> Cosmetics
+          </MenuButton>
+          <MenuButton onClick={onShare}>
+            <Share2 className="h-5 w-5" /> Share
           </MenuButton>
           <MenuButton onClick={onBoard}>
             <BarChart3 className="h-5 w-5" /> Leaderboard

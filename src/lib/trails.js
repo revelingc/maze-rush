@@ -9,7 +9,7 @@ export const TRAILS = [
   { id: "petals",   name: "Petals",   skinId: "rose",    color: "#FB7185", price: 0.99, style: "petal",    desc: "Delicate flower petals drift down in your wake." },
   { id: "embers",   name: "Embers",   skinId: "amber",   color: "#FBBF24", price: 0.99, style: "ember",    desc: "Glowing embers float upward like a dying fire." },
   { id: "leaves",   name: "Leaves",   skinId: "emerald", color: "#34D399", price: 0.99, style: "leaf",     desc: "Autumn leaves flutter and spin behind you." },
-  { id: "hearts",   name: "Hearts",   skinId: "pink",    color: "#F472B6", price: 0.99, style: "heart",    desc: "Tiny floating hearts trail your every move." },
+  { id: "hearts",   name: "Hearts",   skinId: "pink",    color: "#F472B6", style: "heart",    desc: "Tiny floating hearts trail your every move. Unlock with 10 confirmed shares.", shareUnlock: true, unlockShares: 10 },
   { id: "pixels",   name: "Pixels",   skinId: "lime",    color: "#A3E635", price: 0.99, style: "pixel",    desc: "Blocky 8-bit pixels stack up behind your dot." },
   { id: "flames",   name: "Flames",   skinId: "orange",  color: "#FB923C", price: 0.99, style: "flame",    desc: "Flickering flame tongues lick up from your path." },
   { id: "galaxy",   name: "Galaxy",   skinId: "indigo",  color: "#818CF8", price: 0.99, style: "galaxy",   desc: "Swirling star fragments from a distant galaxy." },
@@ -18,8 +18,9 @@ export const TRAILS = [
 
 export const getTrail = (id) => TRAILS.find((t) => t.id === id) || null;
 
-export function isTrailUnlocked(trail, starOwned = false, trailsOwned = [], bestLevel = 0) {
+export function isTrailUnlocked(trail, starOwned = false, trailsOwned = [], bestLevel = 0, confirmedShares = 0) {
   if (!trail) return false;
+  if (trail.shareUnlock) return confirmedShares >= (trail.unlockShares || 0);
   if (trail.star) return !!starOwned || trailsOwned.includes(trail.id);
   if (trail.unlockLevel) return bestLevel >= trail.unlockLevel;
   return trailsOwned.includes(trail.id);
