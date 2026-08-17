@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, X, Crown, Flame, Pencil } from "lucide-react";
-import { loadHighScores } from "@/lib/gameStorage";
+import { fetchLeaderboard } from "@/lib/leaderboard";
 import { generateGoofyName } from "@/lib/nameUtils";
 import NamePromptModal from "@/components/maze/NamePromptModal";
 
@@ -9,9 +9,14 @@ export default function LeaderboardModal({ onClose, displayName, onRename }) {
   const [board, setBoard] = useState(null);
   const [editing, setEditing] = useState(false);
 
-  useEffect(() => {
-    setBoard(loadHighScores());
+  const load = useCallback(async () => {
+    setBoard(null);
+    setBoard(await fetchLeaderboard());
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   return (
     <motion.div
@@ -105,8 +110,8 @@ export default function LeaderboardModal({ onClose, displayName, onRename }) {
             <NamePromptModal
               editMode
               defaultValue={displayName || ""}
-              onSubmit={(name) => { onRename?.(name); setEditing(false); }}
-              onSkip={() => { const g = generateGoofyName(); onRename?.(g); setEditing(false); }}
+              onSubmit={(name) => { onRename?.(name); setEditing(false); load(); }}
+              onSkip={() => { const g = generateGoofyName(); onRename?.(g); setEditing(false); load(); }}
             />
           )}
         </AnimatePresence>

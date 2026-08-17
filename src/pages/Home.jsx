@@ -13,10 +13,11 @@ import ControlPad from "@/components/maze/ControlPad";
 import MainMenu from "@/components/maze/MainMenu";
 import CosmeticsScreen from "@/components/maze/CosmeticsScreen";
 import ObstacleIntroModal from "@/components/maze/ObstacleIntroModal";
-import { loadState, saveState, loadHighScores, addHighScore, loadBestTimes, setBestTime, loadSettings, saveSettings, renamePlayer, loadGhosts, setGhost, getConfirmedShares } from "@/lib/gameStorage";
+import { loadState, saveState, loadHighScores, loadBestTimes, setBestTime, loadSettings, saveSettings, renamePlayer, loadGhosts, setGhost, getConfirmedShares } from "@/lib/gameStorage";
 import { purchaseProduct } from "@/lib/nativePurchase";
 import { getTrail, TRAILS } from "@/lib/trails";
 import { shareResult } from "@/lib/shareUtils";
+import { submitScoreGlobal, renamePlayerGlobal } from "@/lib/leaderboard";
 import { getLevelConfig } from "@/lib/mazeGenerator";
 import { getBiome } from "@/lib/biomes";
 import { generateGoofyName, containsProfanity } from "@/lib/nameUtils";
@@ -116,8 +117,8 @@ export default function Home() {
     return reachedLevel > best.level || (reachedLevel === best.level && streakVal > best.streak);
   }, [displayName]);
 
-  const submitScore = useCallback((reachedLevel, streakVal, name) => {
-    addHighScore({ player_name: name, level: reachedLevel, streak: streakVal });
+  const submitScore = useCallback(async (reachedLevel, streakVal, name) => {
+    await submitScoreGlobal({ player_name: name, level: reachedLevel, streak: streakVal });
   }, []);
 
   // Rename the player on the leaderboard, re-tagging their existing entries.
@@ -126,7 +127,10 @@ export default function Home() {
     if (!clean || containsProfanity(clean)) return;
     const prev = displayName;
     setDisplayName(clean);
-    if (prev && prev !== clean) renamePlayer(prev, clean);
+    if (prev && prev !== clean) {
+      renamePlayer(prev, clean);
+      renamePlayerGlobal(clean);
+    }
   }, [displayName]);
 
   const handleGameOver = useCallback(() => {
