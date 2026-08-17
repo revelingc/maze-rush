@@ -202,14 +202,27 @@ export function loadShares() {
   try {
     const raw = localStorage.getItem(SHARES_KEY);
     const p = raw ? JSON.parse(raw) : {};
-    if (typeof p !== "object" || !p) return { code: genShareCode(), confirmed: 0 };
+    if (typeof p !== "object" || !p) return { code: genShareCode(), confirmed: 0, referredBy: null };
     if (!p.code || typeof p.code !== "string") p.code = genShareCode();
     const c = Number(p.confirmed);
     p.confirmed = Number.isFinite(c) && c >= 0 ? Math.floor(c) : 0;
+    p.referredBy = typeof p.referredBy === "string" && p.referredBy ? p.referredBy : null;
     return p;
   } catch (e) {
-    return { code: genShareCode(), confirmed: 0 };
+    return { code: genShareCode(), confirmed: 0, referredBy: null };
   }
+}
+
+// The share code of the person who referred this device (entered locally).
+export function getReferredBy() {
+  return loadShares().referredBy || null;
+}
+
+export function setReferredBy(code) {
+  const s = loadShares();
+  s.referredBy = code;
+  saveShares(s);
+  return s.referredBy;
 }
 
 export function saveShares(s) {

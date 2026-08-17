@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, Share2, Heart, Copy, Check } from "lucide-react";
 import { shareInvite } from "@/lib/shareUtils";
-import { getShareCode, addConfirmedShare, SHARES_TO_UNLOCK_HEARTS } from "@/lib/gameStorage";
+import { getShareCode, addConfirmedShare, SHARES_TO_UNLOCK_HEARTS, getReferredBy, setReferredBy } from "@/lib/gameStorage";
 import { getTrail } from "@/lib/trails";
 
 export default function ShareScreen({ confirmedShares, onConfirmed, onBack }) {
@@ -10,6 +10,25 @@ export default function ShareScreen({ confirmedShares, onConfirmed, onBack }) {
   const [copied, setCopied] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [justShared, setJustShared] = useState(false);
+  const [referredBy, setReferredByState] = useState(() => getReferredBy());
+  const [refInput, setRefInput] = useState("");
+  const [refMsg, setRefMsg] = useState(null);
+
+  const submitRef = () => {
+    const v = refInput.trim().toUpperCase();
+    if (!/^[A-Z2-9]{6}$/.test(v)) {
+      setRefMsg({ ok: false, text: "Codes are 6 letters/numbers." });
+      return;
+    }
+    if (v === code) {
+      setRefMsg({ ok: false, text: "That's your own code!" });
+      return;
+    }
+    setReferredBy(v);
+    setReferredByState(v);
+    setRefInput("");
+    setRefMsg({ ok: true, text: `Thanks! You were referred by ${v}.` });
+  };
   const hearts = getTrail("hearts");
   const unlocked = confirmedShares >= SHARES_TO_UNLOCK_HEARTS;
   const pct = Math.min(100, (confirmedShares / SHARES_TO_UNLOCK_HEARTS) * 100);
@@ -103,6 +122,38 @@ export default function ShareScreen({ confirmedShares, onConfirmed, onBack }) {
               {copied ? <Check className="h-5 w-5 text-teal-300" /> : <Copy className="h-5 w-5 text-white/70" />}
             </button>
           </div>
+        </section>
+
+        <section className="mt-5">
+          <h2 className="text-sm font-semibold">Got a code from a friend?</h2>
+          <p className="mb-3 text-xs text-white/40">Enter the share code of who introduced you to Maze Rush.</p>
+          {referredBy ? (
+            <div className="flex items-center gap-2 rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
+              <Heart className="h-4 w-4 text-pink-300" fill="currentColor" />
+              <span className="text-sm text-white/70">Referred by</span>
+              <span className="font-mono font-bold tracking-[0.2em] text-teal-300">{referredBy}</span>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <input
+                value={refInput}
+                onChange={(e) => setRefInput(e.target.value.toUpperCase().slice(0, 6))}
+                placeholder="ENTER CODE"
+                maxLength={6}
+                className="w-full rounded-2xl bg-white/5 px-4 py-3 font-mono text-lg tracking-[0.3em] text-white placeholder-white/30 ring-1 ring-white/10 outline-none focus:ring-teal-300/40"
+              />
+              <button
+                onClick={submitRef}
+                disabled={refInput.length < 6}
+                className="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-white ring-1 ring-white/10 transition hover:bg-white/20 disabled:opacity-40"
+              >
+                Submit code
+              </button>
+              {refMsg && (
+                <p className={"text-xs " + (refMsg.ok ? "text-teal-300" : "text-rose-300")}>{refMsg.text}</p>
+              )}
+            </div>
+          )}
         </section>
 
         <button
