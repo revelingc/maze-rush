@@ -274,6 +274,8 @@ export default function Home() {
       setLives(adFree ? 10 : 5);
       setStreak(0);
       setAdUsed(false);
+    } else if (adFree) {
+      setLives(10);
     }
     setShowLevels(false);
     setModal(null);
@@ -568,7 +570,7 @@ export default function Home() {
                 <GameOverModal
                   level={level}
                   streak={streak}
-                  canWatchAd={!adUsed}
+                  canWatchAd={!adUsed && !adFree}
                   onWatchAd={watchAd}
                   onRestart={restart}
                   onShare={handleShare}
