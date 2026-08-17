@@ -436,6 +436,9 @@ export default function Home() {
             <LevelSelectModal bestLevel={bestLevel} onSelect={startPlayAt} onClose={() => setShowLevels(false)} />
           )}
         </AnimatePresence>
+        <AnimatePresence>
+          {ad && <AdOverlay type={ad} onComplete={onAdComplete} />}
+        </AnimatePresence>
       </div>
     );
   }
