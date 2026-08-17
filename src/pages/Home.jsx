@@ -286,7 +286,7 @@ export default function Home() {
   // Free-to-play players must watch an ad to jump forward in the level list
   // (starting at a level past their current run position). Ad-free is exempt.
   const startPlayAt = (n) => {
-    if (!adFree && n > level) {
+    if (!adFree) {
       setPendingJump(n);
       setAd("leveljump");
       setShowLevels(false);
