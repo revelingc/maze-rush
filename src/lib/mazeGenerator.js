@@ -307,4 +307,12 @@ export function updateHunter(hunter, dt, ball, maze, cs) {
   const H = maze.rows * cs;
   hunter.x = Math.max(hunter.r, Math.min(W - hunter.r, hunter.x));
   hunter.y = Math.max(hunter.r, Math.min(H - hunter.r, hunter.y));
+  // Never let the hunter enter the spawn cell (top-left). The hunter flies
+  // through walls, so treat the spawn cell as a hard no-go zone and push the
+  // hunter back to the nearest edge outside it.
+  const spawnMax = cs + hunter.r;
+  if (hunter.x < spawnMax && hunter.y < spawnMax) {
+    if (spawnMax - hunter.x < spawnMax - hunter.y) hunter.x = spawnMax;
+    else hunter.y = spawnMax;
+  }
 }

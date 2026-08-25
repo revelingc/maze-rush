@@ -373,10 +373,15 @@ function updateGame(st, dt, pointer, deadRef, cbRef) {
         return;
       }
     }
-    // lasers (only while firing)
+    // lasers (only while firing). The beam lives entirely inside its own
+    // cell, so a ball in any other cell is shielded by the wall between them
+    // and must never be hit through it — only test lasers in the ball's cell.
     const beamHalf = cs * 0.06;
+    const bCellX = Math.floor(ball.x / cs);
+    const bCellY = Math.floor(ball.y / cs);
     for (const l of lasers) {
       if (l.phase !== "fire") continue;
+      if (l.cx !== bCellX || l.cy !== bCellY) continue;
       const seg = laserSegment(l, cs);
       if (pointSegDist(ball.x, ball.y, seg.ax, seg.ay, seg.bx, seg.by) < ball.r + beamHalf) {
         killPlayer(st, pointer, deadRef, cbRef);
