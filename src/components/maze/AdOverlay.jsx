@@ -1,16 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Film, Sparkles } from "lucide-react";
+import { ADMOB_REWARDED_AD_UNIT_ID } from "@/lib/adConfig";
 
 /**
- * Simulated ad overlay. A real ad network (e.g. AdMob) requires a native SDK
- * and cannot run inside the web build — this stands in for that flow.
- * type: "standard" (+5 lives) | "premium" (+10 lives)
+ * Rewarded ad overlay granting extra lives (or a level jump). When Maze Rush
+ * runs as an installed app, the native shell shows a real Google rewarded ad
+ * using ADMOB_REWARDED_AD_UNIT_ID; in the web build this countdown stands in.
+ * type: "standard" (+5 lives) | "premium" (+10 lives) | "leveljump"
  */
 export default function AdOverlay({ type, onComplete }) {
   const [count, setCount] = useState(5);
 
   useEffect(() => {
+    const bridge = window.NativeAdMob;
+    if (bridge && typeof bridge.showRewarded === "function") {
+      bridge.showRewarded({
+        adUnitId: ADMOB_REWARDED_AD_UNIT_ID,
+        reward: type === "premium" ? 10 : type === "leveljump" ? 0 : 5,
+        onComplete,
+      });
+      return () => {
+        if (typeof bridge.hideRewarded === "function") bridge.hideRewarded();
+      };
+    }
     const t = setInterval(() => setCount((c) => Math.max(0, c - 1)), 1000);
     return () => clearInterval(t);
   }, []);
