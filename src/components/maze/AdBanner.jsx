@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { ADMOB_APP_ID, ADMOB_BANNER_AD_UNIT_ID } from "@/lib/adConfig";
 
-// Google Mobile Ads (AdMob) app id. When Maze Rush runs as an installed app
-// the native shell initializes the Google SDK with this id and renders a real
-// banner ad in the reserved area below. In the web builder preview there is no
-// native ad layer, so a styled placeholder is shown instead.
-const ADMOB_APP_ID = "ca-app-pub-3520421213819679~1862476035";
-
+// Bottom banner ad. When Maze Rush runs as an installed app, the native shell
+// initializes the Google Mobile Ads SDK with ADMOB_APP_ID and renders a real
+// banner (using ADMOB_BANNER_AD_UNIT_ID) in the reserved area below. In the
+// web builder preview there is no native ad layer, so a placeholder is shown.
+// Ad-free users never see the banner.
 export default function AdBanner({ adFree }) {
   const [native, setNative] = useState(false);
 
@@ -14,7 +14,7 @@ export default function AdBanner({ adFree }) {
     const bridge = window.NativeAdMob;
     if (bridge && typeof bridge.showBanner === "function") {
       setNative(true);
-      bridge.showBanner({ appId: ADMOB_APP_ID, position: "bottom" });
+      bridge.showBanner({ appId: ADMOB_APP_ID, adUnitId: ADMOB_BANNER_AD_UNIT_ID, position: "bottom" });
       return () => {
         if (typeof bridge.hideBanner === "function") bridge.hideBanner();
       };
