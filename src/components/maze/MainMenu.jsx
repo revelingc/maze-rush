@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Play, Palette, BarChart3, Zap, Trophy, Flame, ShieldCheck, X, Clock, Settings as SettingsIcon, Layers, Share2 } from "lucide-react";
 import DotPreview from "@/components/maze/DotPreview";
+import AdBanner from "@/components/maze/AdBanner";
 
 export default function MainMenu({ bestLevel, bestStreak, skinObj, onPlay, onLevels, onCosmetics, onShare, onBoard, onStats, onSettings, adFree, onBuyAdFree }) {
   const [confirmAdFree, setConfirmAdFree] = useState(false);
@@ -67,6 +68,8 @@ export default function MainMenu({ bestLevel, bestStreak, skinObj, onPlay, onLev
           </button>
         )}
       </div>
+
+      <AdBanner adFree={adFree} />
 
       <AnimatePresence>
         {confirmAdFree && (
