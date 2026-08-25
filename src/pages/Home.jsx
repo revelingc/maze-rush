@@ -1,25 +1,22 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Heart, Zap, Gauge, Flame, Trophy, BarChart3, Home as HomeIcon } from "lucide-react";
+import { Heart, Zap, Gauge, Flame, Trophy, Home as HomeIcon } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MazeCanvas from "@/components/maze/MazeCanvas";
 import AdOverlay from "@/components/maze/AdOverlay";
 import GameOverModal from "@/components/maze/GameOverModal";
 import LevelCompleteModal from "@/components/maze/LevelCompleteModal";
-import LeaderboardModal from "@/components/maze/LeaderboardModal";
 import LevelSelectModal from "@/components/maze/LevelSelectModal";
-import NamePromptModal from "@/components/maze/NamePromptModal";
 import ControlPad from "@/components/maze/ControlPad";
 import MainMenu from "@/components/maze/MainMenu";
 import CosmeticsScreen from "@/components/maze/CosmeticsScreen";
 import ObstacleIntroModal from "@/components/maze/ObstacleIntroModal";
-import { loadState, saveState, loadHighScores, addHighScore, loadBestTimes, setBestTime, loadSettings, saveSettings, renamePlayer, loadGhosts, setGhost, getConfirmedShares } from "@/lib/gameStorage";
+import { loadState, saveState, loadBestTimes, setBestTime, loadSettings, saveSettings, loadGhosts, setGhost, getConfirmedShares } from "@/lib/gameStorage";
 import { purchaseProduct } from "@/lib/nativePurchase";
 import { getTrail, TRAILS } from "@/lib/trails";
 import { shareResult } from "@/lib/shareUtils";
 import { getLevelConfig } from "@/lib/mazeGenerator";
 import { getBiome } from "@/lib/biomes";
-import { generateGoofyName, containsProfanity } from "@/lib/nameUtils";
 import { getSkin } from "@/lib/skins";
 import StatsScreen from "@/components/maze/StatsScreen";
 import ShareScreen from "@/components/maze/ShareScreen";
@@ -55,9 +52,6 @@ export default function Home() {
   const [modal, setModal] = useState(null);
   const [ad, setAd] = useState(null);
   const [adUsed, setAdUsed] = useState(false);
-  const [showBoard, setShowBoard] = useState(false);
-  const [displayName, setDisplayName] = useState(initial.displayName || null);
-  const [pendingScore, setPendingScore] = useState(null);
   const [buying, setBuying] = useState(false);
   const [bestTimes, setBestTimes] = useState(() => loadBestTimes());
   const [ghosts, setGhosts] = useState(() => loadGhosts());
@@ -80,7 +74,7 @@ export default function Home() {
   const pointer = useRef({ active: false, ax: 0, ay: 0, x: 0, y: 0, maxR: 70 });
 
   useEffect(() => {
-    saveState({ level, lives, streak, bestStreak, bestLevel, cycle, skin, wallColor, bgColor, hazardColor, laserColor, hunterColor, starOwned, seenIntros, displayName, adFree, trail, trailsOwned });
+    saveState({ level, lives, streak, bestStreak, bestLevel, cycle, skin, wallColor, bgColor, hazardColor, laserColor, hunterColor, starOwned, seenIntros, adFree, trail, trailsOwned });
   }, [level, lives, streak, bestStreak, bestLevel, cycle, skin, wallColor, bgColor, starOwned, seenIntros, adFree, trail, trailsOwned]);
 
   useEffect(() => {
@@ -108,44 +102,10 @@ export default function Home() {
     }
   }, [screen, level, cycle, seenIntros, ghosts]);
 
-  const checkQualifies = useCallback((reachedLevel, streakVal) => {
-    const scores = loadHighScores();
-    const mine = displayName ? scores.filter((s) => s.player_name === displayName) : [];
-    if (!mine.length) return true;
-    const best = mine[0];
-    return reachedLevel > best.level || (reachedLevel === best.level && streakVal > best.streak);
-  }, [displayName]);
-
-  const submitScore = useCallback((reachedLevel, streakVal, name) => {
-    addHighScore({ player_name: name, level: reachedLevel, streak: streakVal });
-  }, []);
-
-  // Rename the player on the leaderboard, re-tagging their existing entries.
-  const handleRename = useCallback((name) => {
-    const clean = (name || "").trim().slice(0, 16);
-    if (!clean || containsProfanity(clean)) return;
-    const prev = displayName;
-    setDisplayName(clean);
-    if (prev && prev !== clean) {
-      renamePlayer(prev, clean);
-    }
-  }, [displayName]);
-
   const handleGameOver = useCallback(() => {
-    const reachedLevel = level;
-    const streakVal = streak;
-    if (checkQualifies(reachedLevel, streakVal)) {
-      if (displayName) {
-        submitScore(reachedLevel, streakVal, displayName);
-        setModal("gameover");
-      } else {
-        setPendingScore({ level: reachedLevel, streak: streakVal });
-        setModal("nameprompt");
-      }
-    } else {
-      setModal("gameover");
-    }
-  }, [level, streak, displayName, checkQualifies, submitScore]);
+    setRunning(false);
+    setModal("gameover");
+  }, []);
 
   const handleLevelComplete = useCallback((elapsed, path) => {
     setRunning(false);
@@ -221,21 +181,6 @@ export default function Home() {
     setLives((l) => l + gain);
     setRunning(true);
     setResetToken((t) => t + 1);
-  };
-
-  const onNameSubmit = (name) => {
-    setDisplayName(name);
-    if (pendingScore) submitScore(pendingScore.level, pendingScore.streak, name);
-    setPendingScore(null);
-    setModal("gameover");
-  };
-
-  const onNameSkip = () => {
-    const name = generateGoofyName();
-    setDisplayName(name);
-    if (pendingScore) submitScore(pendingScore.level, pendingScore.streak, name);
-    setPendingScore(null);
-    setModal("gameover");
   };
 
   const startPlay = () => {
@@ -396,7 +341,6 @@ export default function Home() {
 
   const handleAccount = useCallback((account) => {
     setSettings((s) => ({ ...s, account }));
-    if (account?.name && !containsProfanity(account.name)) setDisplayName(account.name);
   }, []);
 
   const skinObj = getSkin(skin);
@@ -419,17 +363,11 @@ export default function Home() {
           onLevels={() => setShowLevels(true)}
           onCosmetics={() => navigate("/cosmetics")}
           onShare={() => navigate("/share")}
-          onBoard={() => setShowBoard(true)}
           onStats={() => navigate("/stats")}
           onSettings={() => navigate("/settings")}
           adFree={adFree}
           onBuyAdFree={handleBuyAdFree}
         />
-        <AnimatePresence>
-          {showBoard && (
-            <LeaderboardModal onClose={() => setShowBoard(false)} displayName={displayName} onRename={handleRename} />
-          )}
-        </AnimatePresence>
         <AnimatePresence>
           {showLevels && (
             <LevelSelectModal bestLevel={bestLevel} onSelect={startPlayAt} onClose={() => setShowLevels(false)} />
@@ -516,7 +454,6 @@ export default function Home() {
         bestStreak={bestStreak}
         difficultyPct={cfg.difficultyPct}
         biomeName={biome.name}
-        onOpenBoard={() => setShowBoard(true)}
       />
 
       <main className="flex flex-1 flex-col px-4 pt-2 safe-pb-4">
@@ -560,14 +497,6 @@ export default function Home() {
                   onNext={nextLevel}
                 />
               )}
-              {modal === "nameprompt" && (
-                <NamePromptModal
-                  defaultValue={displayName || ""}
-                  score={pendingScore}
-                  onSubmit={onNameSubmit}
-                  onSkip={onNameSkip}
-                />
-              )}
               {modal === "gameover" && (
                 <GameOverModal
                   level={level}
@@ -581,9 +510,6 @@ export default function Home() {
               {ad && <AdOverlay type={ad} onComplete={onAdComplete} />}
               {intro && (
                 <ObstacleIntroModal obstacleKey={intro} onContinue={dismissIntro} />
-              )}
-              {showBoard && (
-                <LeaderboardModal onClose={() => setShowBoard(false)} displayName={displayName} onRename={handleRename} />
               )}
             </AnimatePresence>
           </div>
@@ -603,7 +529,7 @@ export default function Home() {
   );
 }
 
-function Header({ level, lives, streak, bestStreak, difficultyPct, onOpenBoard, biomeName }) {
+function Header({ level, lives, streak, bestStreak, difficultyPct, biomeName }) {
   return (
     <header className="px-5 safe-pt-5">
       <div className="flex items-center justify-between">
@@ -621,13 +547,6 @@ function Header({ level, lives, streak, bestStreak, difficultyPct, onOpenBoard, 
             </p>
           </div>
         </div>
-        <button
-          onClick={onOpenBoard}
-          className="flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1.5 text-xs font-medium text-white/80 ring-1 ring-white/10 transition hover:bg-white/10"
-        >
-          <BarChart3 className="h-4 w-4 text-amber-300" />
-          Ranks
-        </button>
       </div>
 
       <div className="mt-3 flex items-center gap-2">

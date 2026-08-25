@@ -53,46 +53,6 @@ export function saveState(state) {
 
 const SCORES_KEY = "mazerush_highscores_v1";
 
-export function loadHighScores() {
-  try {
-    const raw = localStorage.getItem(SCORES_KEY);
-    const arr = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(arr)) return [];
-    return arr
-      .filter((s) => s && typeof s.player_name === "string" && Number.isFinite(s.level))
-      .sort((a, b) => b.level - a.level || (b.streak || 0) - (a.streak || 0))
-      .slice(0, 50);
-  } catch (e) {
-    return [];
-  }
-}
-
-export function addHighScore(entry) {
-  try {
-    const arr = loadHighScores();
-    arr.push({ player_name: entry.player_name, level: entry.level, streak: entry.streak || 0 });
-    arr.sort((a, b) => b.level - a.level || (b.streak || 0) - (a.streak || 0));
-    localStorage.setItem(SCORES_KEY, JSON.stringify(arr.slice(0, 50)));
-  } catch (e) {
-    /* ignore */
-  }
-}
-
-// Re-tags all of a player's existing leaderboard entries with a new name.
-export function renamePlayer(oldName, newName) {
-  if (!oldName || !newName || oldName === newName) return;
-  try {
-    const arr = loadHighScores();
-    let changed = false;
-    for (const s of arr) {
-      if (s.player_name === oldName) { s.player_name = newName; changed = true; }
-    }
-    if (changed) localStorage.setItem(SCORES_KEY, JSON.stringify(arr.slice(0, 50)));
-  } catch (e) {
-    /* ignore */
-  }
-}
-
 const TIMES_KEY = "mazerush_besttimes_v1";
 
 export function loadBestTimes() {
