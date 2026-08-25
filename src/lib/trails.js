@@ -1,6 +1,7 @@
 // Move-trail cosmetics for Maze Rush. Each colored dot has a matching trail
-// style purchasable for $0.99. The "Stardust" trail is $1.99 on its own and
-// is also unlocked by the Shooting Star skin (starOwned).
+// style purchasable for $0.99. The "Stardust" trail is $1.99 on its own and is
+// also included in the "Shooting Star + Stardust" bundle — the skin and trail
+// are sold separately, so owning the skin does not unlock the trail.
 
 export const TRAILS = [
   { id: "bubbles",  name: "Bubbles",  skinId: "default", color: "#5EEAD4", price: 0, unlockLevel: 15, style: "bubble",   desc: "Translucent bubbles rise and pop behind your dot. Free at level 15." },
@@ -21,7 +22,7 @@ export const getTrail = (id) => TRAILS.find((t) => t.id === id) || null;
 export function isTrailUnlocked(trail, starOwned = false, trailsOwned = [], bestLevel = 0, confirmedShares = 0) {
   if (!trail) return false;
   if (trail.shareUnlock) return confirmedShares >= (trail.unlockShares || 0);
-  if (trail.star) return !!starOwned || trailsOwned.includes(trail.id);
+  if (trail.star) return trailsOwned.includes(trail.id);
   if (trail.unlockLevel) return bestLevel >= trail.unlockLevel;
   return trailsOwned.includes(trail.id);
 }

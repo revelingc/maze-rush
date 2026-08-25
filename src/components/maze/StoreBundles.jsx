@@ -44,7 +44,7 @@ const ICONS = { star: Star, shield: ShieldCheck, crown: Crown };
 export default function StoreBundles({ starOwned, adFree, trailsOwned, buying, onBuyBundle }) {
   const allTrailsOwned = PAID_TRAILS.every((t) => trailsOwned.includes(t.id));
   const isOwned = {
-    bundle_star_stardust: !!starOwned,
+    bundle_star_stardust: !!starOwned && trailsOwned.includes("stardust"),
     bundle_consumables: !!adFree && allTrailsOwned,
     bundle_everything: !!starOwned && !!adFree && allTrailsOwned,
   };

@@ -366,6 +366,7 @@ export default function Home() {
       const allTrailIds = TRAILS.map((t) => t.id);
       if (bundleId === "bundle_star_stardust") {
         setStarOwned(true);
+        setTrailsOwned((o) => (o.includes("stardust") ? o : [...o, "stardust"]));
       } else if (bundleId === "bundle_consumables") {
         setAdFree(true);
         setTrailsOwned(allTrailIds);
