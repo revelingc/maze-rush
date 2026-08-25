@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, X, Crown, Flame, Pencil } from "lucide-react";
-import { fetchLeaderboard } from "@/lib/leaderboard";
+import { loadHighScores } from "@/lib/gameStorage";
 import { generateGoofyName } from "@/lib/nameUtils";
 import NamePromptModal from "@/components/maze/NamePromptModal";
 
@@ -9,9 +9,8 @@ export default function LeaderboardModal({ onClose, displayName, onRename }) {
   const [board, setBoard] = useState(null);
   const [editing, setEditing] = useState(false);
 
-  const load = useCallback(async () => {
-    setBoard(null);
-    setBoard(await fetchLeaderboard());
+  const load = useCallback(() => {
+    setBoard(loadHighScores());
   }, []);
 
   useEffect(() => {
