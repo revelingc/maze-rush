@@ -13,4 +13,4 @@
 export const ADMOB_APP_ID = "ca-app-pub-3520421213819679~1862476035";
 
 // Banner ad unit id (/ format). Create one in AdMob and paste it here.
-export const ADMOB_BANNER_AD_UNIT_ID = "ca-app-pub-3520421213819679/XXXXXXXXXX";
+export const ADMOB_BANNER_AD_UNIT_ID = "ca-app-pub-3520421213819679/6231754438";
