@@ -26,7 +26,7 @@ export default function LevelCompleteModal({ level, time, isRecord, cycleComplet
           </>
         ) : (
           <p className="mt-3 text-sm text-white/50">
-            The maze grows 5% harder. Keep your streak alive.
+            The maze grows 2% harder. Keep your streak alive.
           </p>
         )}
 
