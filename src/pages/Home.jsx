@@ -339,6 +339,29 @@ export default function Home() {
 
   const handleShareConfirmed = useCallback((n) => setConfirmedShares(n), []);
 
+  // Pull-to-refresh: re-read locally-stored progress and unlocks.
+  const refreshStats = useCallback(async () => {
+    const s = loadState();
+    setBestLevel(s.bestLevel);
+    setBestStreak(s.bestStreak);
+    setBestTimes(loadBestTimes());
+  }, []);
+
+  const refreshCosmetics = useCallback(async () => {
+    const s = loadState();
+    setStarOwned(!!s.starOwned);
+    setTrailsOwned(s.trailsOwned || []);
+    setAdFree(!!s.adFree);
+    setBestLevel(s.bestLevel);
+    setSkin(s.skin);
+    setWallColor(s.wallColor);
+    setBgColor(s.bgColor);
+    setHazardColor(s.hazardColor);
+    setLaserColor(s.laserColor);
+    setHunterColor(s.hunterColor);
+    setConfirmedShares(getConfirmedShares());
+  }, []);
+
   const handleAccount = useCallback((account) => {
     setSettings((s) => ({ ...s, account }));
   }, []);
@@ -408,6 +431,7 @@ export default function Home() {
         adFree={adFree}
         onBuyBundle={handleBuyBundle}
         onBack={() => navigate(-1)}
+        onRefresh={refreshCosmetics}
       />
     );
   }
@@ -431,6 +455,7 @@ export default function Home() {
         bestTimes={bestTimes}
         onShare={handleShare}
         onBack={() => navigate(-1)}
+        onRefresh={refreshStats}
       />
     );
   }

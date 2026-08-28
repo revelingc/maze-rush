@@ -1,13 +1,17 @@
-import React from "react";
+import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, Share2, Trophy, Flame, Clock, Timer } from "lucide-react";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import PullRefreshIndicator from "@/components/maze/PullRefreshIndicator";
 
 function fmt(secs) {
   if (secs == null || !Number.isFinite(secs)) return "—";
   return `${secs.toFixed(1)}s`;
 }
 
-export default function StatsScreen({ bestLevel, bestStreak, bestTimes, onShare, onBack }) {
+export default function StatsScreen({ bestLevel, bestStreak, bestTimes, onShare, onBack, onRefresh })  {
+  const scrollRef = useRef(null);
+  const { pull, refreshing } = usePullToRefresh(scrollRef, onRefresh);
   const levels = Object.keys(bestTimes)
     .map(Number)
     .filter((n) => Number.isFinite(n))
@@ -28,7 +32,8 @@ export default function StatsScreen({ bestLevel, bestStreak, bestTimes, onShare,
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-5 safe-pb-6">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 safe-pb-6">
+        <PullRefreshIndicator pull={pull} refreshing={refreshing} />
         <div className="mt-4 grid grid-cols-2 gap-3">
           <Card icon={<Trophy className="h-4 w-4 text-yellow-300" />} label="Best Level" value={bestLevel} />
           <Card icon={<Flame className="h-4 w-4 text-amber-300" />} label="Best Streak" value={bestStreak} />

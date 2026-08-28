@@ -5,6 +5,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { signIn as nativeSignIn, signOut as nativeSignOut, detectPlatform } from "@/lib/nativeAccount";
 import { clearAllData } from "@/lib/gameStorage";
+import { useAuth } from "@/lib/AuthContext";
+import { base44 } from "@/api/base44Client";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +26,7 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
   const providerLabel = platform === "ios" ? "Apple / iCloud" : "Google / Android";
   const account = settings.account;
   const showDelete = !!account;
+  const { isAuthenticated, logout } = useAuth();
   const [deleting, setDeleting] = useState(false);
 
   const update = (patch) => setSettings((s) => ({ ...s, ...patch }));
@@ -63,6 +66,19 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
       onAccount(null);
     } finally {
       window.location.href = "/";
+    }
+  };
+
+  // Base44 account deletion: clears server-side data + app record, then logs out.
+  const handleDeleteBase44Account = async () => {
+    setDeleting(true);
+    try {
+      await base44.functions.invoke("delete-account");
+    } catch (e) {
+      // best-effort — proceed to local cleanup + logout
+    } finally {
+      clearAllData();
+      logout();
     }
   };
 
@@ -253,45 +269,84 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
           )}
         </Section>
 
-        {/* Danger zone — account deletion (authenticated users only) */}
-        {showDelete && (
+        {/* Danger zone — account deletion (native sync or Base44 login) */}
+        {(showDelete || isAuthenticated) && (
           <Section
             icon={<Trash2 className="h-4 w-4 text-rose-500" />}
             title="Danger zone"
             subtitle="Permanently remove your account"
           >
-            <div className="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
-              <p className="text-xs text-slate-500">
-                Clears your local progress, scores, and settings, and signs you out. This can't be undone.
-              </p>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <button
-                    type="button"
-                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-rose-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-rose-400"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" /> Delete account
-                  </button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete account?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This permanently clears your local progress, scores, and settings and signs you out. This action can't be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDeleteAccount}
-                      disabled={deleting}
-                      className="bg-rose-500 text-white hover:bg-rose-400"
-                    >
-                      {deleting ? "Deleting…" : "Delete"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+            <div className="space-y-4 rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+              {isAuthenticated && (
+                <div>
+                  <p className="text-xs text-slate-500">
+                    Permanently deletes your Base44 account — saved progress, purchases, and settings are removed and you'll be signed out everywhere. This can't be undone.
+                  </p>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button
+                        type="button"
+                        className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-rose-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-rose-400"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" /> Delete Base44 account
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Base44 account?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This permanently deletes your account, saved progress, purchases, and settings, and signs you out everywhere. This action can't be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteBase44Account}
+                          disabled={deleting}
+                          className="bg-rose-500 text-white hover:bg-rose-400"
+                        >
+                          {deleting ? "Deleting…" : "Delete"}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              )}
+              {showDelete && (
+                <div>
+                  <p className="text-xs text-slate-500">
+                    Clears your local progress, scores, and settings, and signs you out. This can't be undone.
+                  </p>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button
+                        type="button"
+                        className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-rose-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-rose-400"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" /> Delete account
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete account?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This permanently clears your local progress, scores, and settings and signs you out. This action can't be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteAccount}
+                          disabled={deleting}
+                          className="bg-rose-500 text-white hover:bg-rose-400"
+                        >
+                          {deleting ? "Deleting…" : "Delete"}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              )}
             </div>
           </Section>
         )}

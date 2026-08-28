@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useRef } from "react";
 import { ChevronLeft, Lock, Check } from "lucide-react";
 import { DOT_SKINS, isSkinUnlocked } from "@/lib/skins";
 import { TRAILS, isTrailUnlocked } from "@/lib/trails";
 import DotPreview from "@/components/maze/DotPreview";
 import StoreBundles from "@/components/maze/StoreBundles";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import PullRefreshIndicator from "@/components/maze/PullRefreshIndicator";
 
 const WALL_PRESETS = ["#39496B", "#475569", "#7C3AED", "#DB2777", "#0EA5E9", "#F59E0B", "#10B981", "#F8FAFC"];
 const BG_PRESETS = ["#0B0F1A", "#000000", "#0F172A", "#1E1B4B", "#3B0764", "#7F1D1D", "#082F49", "#1F2937"];
@@ -35,7 +37,10 @@ export default function CosmeticsScreen({
   onBuyTrail,
   buying,
   onBack,
+  onRefresh,
 }) {
+  const scrollRef = useRef(null);
+  const { pull, refreshing } = usePullToRefresh(scrollRef, onRefresh);
   return (
     <div className="flex h-[100dvh] flex-col bg-slate-950 text-white">
       <header className="flex items-center gap-3 px-5 safe-pt-5">
@@ -51,7 +56,8 @@ export default function CosmeticsScreen({
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-5 safe-pb-6">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 safe-pb-6">
+        <PullRefreshIndicator pull={pull} refreshing={refreshing} />
         <StoreBundles
           starOwned={starOwned}
           adFree={adFree}
