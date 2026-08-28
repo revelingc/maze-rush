@@ -248,7 +248,7 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
                 Detected platform: <span className="font-semibold text-slate-900">{providerLabel}</span>
               </div>
               <p className="mt-2 text-xs text-slate-500">
-                Sign in to sync your leaderboard name and keep purchases tied to your account.
+                Sign in to keep your purchases tied to your account across devices.
               </p>
               <button
                 onClick={handleSignIn}
