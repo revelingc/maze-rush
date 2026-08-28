@@ -39,6 +39,10 @@ export async function signOut() {
 export function detectPlatform() {
   if (typeof navigator === "undefined") return "android";
   const ua = navigator.userAgent || "";
-  const isIOS = /iphone|ipad|ipod|ios/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  return isIOS ? "ios" : "android";
+  const platform = navigator.platform || "";
+  const isAppleMobile = /iphone|ipad|ipod|ios/i.test(ua);
+  const isIPadOS = platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  const isMac = /macintosh|mac os x/i.test(ua) || platform === "MacIntel";
+  // Any Apple device (iPhone, iPad, iPadOS, macOS) resolves to the Apple family.
+  return isAppleMobile || isIPadOS || isMac ? "ios" : "android";
 }
