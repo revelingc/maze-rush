@@ -17,7 +17,7 @@ export default function MainMenu({ bestLevel, bestStreak, skinObj, onPlay, onLev
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-400/20 to-indigo-500/20 ring-1 ring-white/10">
             <Zap className="h-7 w-7 text-teal-300" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">Maze Rush</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Epic Maze Rush</h1>
           <p className="mt-1 text-sm text-white/40">Outrun the clock. Chase the streak.</p>
         </motion.div>
 

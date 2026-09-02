@@ -1,6 +1,6 @@
 {
-  "name": "Maze Rush",
-  "short_name": "Maze Rush",
+  "name": "Epic Maze Rush",
+  "short_name": "Epic Maze Rush",
   "description": "Drag to steer a glowing orb through fast, procedurally generated labyrinths. Beat the clock, climb the leaderboard, chase your streak.",
   "start_url": "/",
   "scope": "/",
