@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Play, Palette, Zap, Trophy, Flame, ShieldCheck, X, Clock, Settings as SettingsIcon, Layers, Share2 } from "lucide-react";
+import { Play, Palette, Trophy, Flame, ShieldCheck, X, Clock, Settings as SettingsIcon, Layers, Share2 } from "lucide-react";
 import DotPreview from "@/components/maze/DotPreview";
 import AdBanner from "@/components/maze/AdBanner";
+import { Image } from "@/components/ui/image";
+
+const LOGO_URL = "https://media.base44.com/images/public/6a6cad6323aef3b8b1c4041f/7b4f131b9_generated_image.png";
 
 export default function MainMenu({ bestLevel, bestStreak, skinObj, onPlay, onLevels, onCosmetics, onShare, onStats, onSettings, adFree, onBuyAdFree }) {
   const [confirmAdFree, setConfirmAdFree] = useState(false);
@@ -14,8 +17,8 @@ export default function MainMenu({ bestLevel, bestStreak, skinObj, onPlay, onLev
           animate={{ opacity: 1, y: 0 }}
           className="text-center"
         >
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-400/20 to-indigo-500/20 ring-1 ring-white/10">
-            <Zap className="h-7 w-7 text-teal-300" />
+          <div className="mx-auto mb-3 overflow-hidden rounded-2xl ring-1 ring-white/10">
+            <Image src={LOGO_URL} alt="Maze Rush" fittingType="fit" className="h-16 w-16" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Maze Rush</h1>
           <p className="mt-1 text-sm text-white/40">Outrun the clock. Chase the streak.</p>

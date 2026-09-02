@@ -1,8 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Heart, Zap, Gauge, Flame, Trophy, Home as HomeIcon } from "lucide-react";
+import { Heart, Gauge, Flame, Trophy, Home as HomeIcon } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Image } from "@/components/ui/image";
 import MazeCanvas from "@/components/maze/MazeCanvas";
+
+const LOGO_URL = "https://media.base44.com/images/public/6a6cad6323aef3b8b1c4041f/7b4f131b9_generated_image.png";
 import AdOverlay from "@/components/maze/AdOverlay";
 import GameOverModal from "@/components/maze/GameOverModal";
 import LevelCompleteModal from "@/components/maze/LevelCompleteModal";
@@ -559,8 +562,8 @@ function Header({ level, lives, streak, bestStreak, difficultyPct, biomeName }) 
     <header className="px-5 safe-pt-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400/20 to-indigo-500/20 ring-1 ring-white/10">
-            <Zap className="h-4 w-4 text-teal-300" />
+          <div className="overflow-hidden rounded-xl ring-1 ring-white/10">
+            <Image src={LOGO_URL} alt="Maze Rush" fittingType="fit" className="h-9 w-9" />
           </div>
           <div>
             <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/40">
