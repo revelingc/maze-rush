@@ -564,7 +564,7 @@ function Header({ level, lives, streak, bestStreak, difficultyPct, biomeName }) 
           </div>
           <div>
             <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-white/40">
-              Epic Maze Rush
+              Maze Rush
             </p>
             <p className="text-sm font-semibold">
               Lv {level}
