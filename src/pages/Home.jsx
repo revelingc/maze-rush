@@ -365,10 +365,6 @@ export default function Home() {
     setConfirmedShares(getConfirmedShares());
   }, []);
 
-  const handleAccount = useCallback((account) => {
-    setSettings((s) => ({ ...s, account }));
-  }, []);
-
   const skinObj = getSkin(skin);
   const cfg = getLevelConfig(level, cycle);
   const biome = getBiome(cycle);
@@ -444,7 +440,6 @@ export default function Home() {
       <SettingsScreen
         settings={settings}
         setSettings={setSettings}
-        onAccount={handleAccount}
         onBack={() => navigate(-1)}
       />
     );

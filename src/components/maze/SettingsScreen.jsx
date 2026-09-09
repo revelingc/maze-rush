@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Vibrate, Eye, Cloud, Check, Smartphone, LogOut, Trash2, Joystick, Music } from "lucide-react";
+import { ArrowLeft, Vibrate, Eye, Trash2, Joystick, Music } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
-import { signIn as nativeSignIn, signOut as nativeSignOut, detectPlatform } from "@/lib/nativeAccount";
+import { signOut as nativeSignOut } from "@/lib/nativeAccount";
 import { clearAllData } from "@/lib/gameStorage";
 import { useAuth } from "@/lib/AuthContext";
 import {
@@ -18,44 +18,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export default function SettingsScreen({ settings, setSettings, onAccount, onBack }) {
-  const [connecting, setConnecting] = useState(false);
-  const [msg, setMsg] = useState(null);
-  const platform = detectPlatform();
-  const providerLabel = platform === "ios" ? "Apple / iCloud" : "Google / Android";
-  const account = settings.account;
-  const showDelete = !!account;
+export default function SettingsScreen({ settings, setSettings, onBack }) {
   const { isAuthenticated, logout } = useAuth();
   const [deleting, setDeleting] = useState(false);
 
   const update = (patch) => setSettings((s) => ({ ...s, ...patch }));
-
-  const handleSignIn = async () => {
-    setMsg(null);
-    setConnecting(true);
-    try {
-      const res = await nativeSignIn();
-      if (res?.ok && res.account) {
-        onAccount({
-          provider: res.provider || platform,
-          name: res.account.name || res.account.email || "Player",
-          id: res.account.id,
-        });
-      } else if (res?.reason === "unavailable") {
-        setMsg("Account sync is available in the installed app.");
-      } else {
-        setMsg("Sign-in didn't complete. Try again.");
-      }
-    } finally {
-      setConnecting(false);
-    }
-  };
-
-  const handleSignOut = async () => {
-    await nativeSignOut();
-    onAccount(null);
-    setMsg(null);
-  };
 
   // Account deletion: wipes everything stored on this device, then ends any
   // active session so the app returns to a clean, signed-out state.
@@ -64,7 +31,6 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
     try {
       clearAllData();
       await nativeSignOut();
-      onAccount(null);
     } catch (e) {
       /* ignore — still proceed to sign-out */
     }
@@ -214,56 +180,8 @@ export default function SettingsScreen({ settings, setSettings, onAccount, onBac
           </p>
         </Section>
 
-        {/* Account */}
-        <Section
-          icon={<Cloud className="h-4 w-4 text-indigo-500" />}
-          title="Account sync"
-          subtitle="Leaderboard & purchases"
-        >
-          {account ? (
-            <div className="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 ring-1 ring-emerald-200">
-                  <Check className="h-5 w-5 text-emerald-600" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-slate-900">{account.name}</p>
-                  <p className="text-xs text-slate-500">Connected · {account.provider}</p>
-                </div>
-              </div>
-              <p className="mt-3 text-xs text-slate-500">
-                Your display name and purchases are linked to this account across the installed app.
-              </p>
-              <button
-                onClick={handleSignOut}
-                className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-2 text-xs font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-200"
-              >
-                <LogOut className="h-3.5 w-3.5" /> Sign out
-              </button>
-            </div>
-          ) : (
-            <div className="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
-              <div className="flex items-center gap-2 text-sm text-slate-700">
-                <Smartphone className="h-4 w-4 text-slate-400" />
-                Detected platform: <span className="font-semibold text-slate-900">{providerLabel}</span>
-              </div>
-              <p className="mt-2 text-xs text-slate-500">
-                Sign in to keep your purchases tied to your account across devices.
-              </p>
-              <button
-                onClick={handleSignIn}
-                disabled={connecting}
-                className="mt-4 w-full rounded-xl bg-indigo-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-400 disabled:opacity-50"
-              >
-                {connecting ? "Connecting…" : `Sign in with ${providerLabel.split(" / ")[0]}`}
-              </button>
-              {msg && <p className="mt-3 text-xs text-amber-600">{msg}</p>}
-            </div>
-          )}
-        </Section>
-
         {/* Danger zone — wipes all local data and signs out */}
-        {(showDelete || isAuthenticated) && (
+        {isAuthenticated && (
           <Section
             icon={<Trash2 className="h-4 w-4 text-rose-500" />}
             title="Danger zone"
